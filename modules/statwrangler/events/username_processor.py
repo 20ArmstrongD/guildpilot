@@ -1,6 +1,10 @@
 import json
 
+<<<<<<< HEAD
 file_path = "/home/bot-vm/code/guildpilot/modules/statwrangler/json/usernames.json"
+=======
+file_path = "/home/bot-vm/code/guildpilot/modules/statwrangler/json/usernames.json
+>>>>>>> ff4c745 (ported over original stats wrangler code)
 
 def load_usernames():
     try:
