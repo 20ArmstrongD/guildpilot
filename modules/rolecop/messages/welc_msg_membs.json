@@ -1,0 +1,9 @@
+{
+    "WELCOME_MESSAGES_MEMBERS": [
+        "Welcome to the server, {member}! You have been assigned the role of {role}!\nPlease take a look at the {WELCOME_CHANNEL} to learn more about the server!",
+        "Hey {member}, welcome aboard! Enjoy your stay as a {role}!\nPlease take a look at the {WELCOME_CHANNEL} to learn more about the server!",
+        "Greetings {member}! Hope you have a great time as a {role} in our community!\nPlease take a look at the {WELCOME_CHANNEL} to learn more about the server!",
+        "Welcome, {member}! You are now part of the {role} team!\nPlease take a look at the {WELCOME_CHANNEL} to learn more about the server!",
+        "Hello {member}! We're excited to have you join us as a {role}! \nPlease take a look at the {WELCOME_CHANNEL} to learn more about the server!"
+    ]
+}
