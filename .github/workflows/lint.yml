@@ -7,7 +7,7 @@ on:
 
 jobs:
   ruff:
-    name: Ruff (lint)
+    name: Code Lint
     runs-on: ubuntu-latest
 
     steps:
@@ -25,6 +25,6 @@ jobs:
           pip install -r requirements.txt
           pip install ruff
 
-      - name: Ruff check
+      - name: lint check
         run: |
           ruff check modules 
