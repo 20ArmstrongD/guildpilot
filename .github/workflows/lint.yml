@@ -1,0 +1,30 @@
+name: Linter
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  ruff:
+    name: Code Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps + ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: lint check
+        run: |
+          python -c "print('No tests yet skipping tests step')"
