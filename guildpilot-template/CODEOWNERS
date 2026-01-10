@@ -1,6 +1,7 @@
-#Default Owner
+# Default Owner (everything)
 * @20ArmstrongD
 
+# Critical Areas (for future)
 /.github/ @20ArmstrongD
 /core/ @20ArmstrongD
 /modules/ @20ArmstrongD
