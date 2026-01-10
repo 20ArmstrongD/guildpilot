@@ -1,5 +1,9 @@
 # 🤖 GuildPilot
 
+![CI](https://github.com/20ArmstrongD/guildpilot/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![License](https://img.shields.io/github/license/20ArmstrongD/guildpilot)
+
 **GuildPilot** is an all-in-one Discord bot designed to manage server operations through a modular, scalable architecture.  
 It combines member role automation, game stat lookups, AI chat capabilities, and streaming notifications into a single bot identity.
 
