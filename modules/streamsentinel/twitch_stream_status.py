@@ -2,7 +2,7 @@ import datetime as _dt
 from typing import Any, Dict, List, Optional
 import requests
 
-from twitch_auth import twitch_headers
+from .twitch_auth import twitch_headers
 
 TWITCH_HELIX = "https://api.twitch.tv/helix"
 
