@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 name: CI
-=======
-name: Linter
->>>>>>> master
 
 on:
   pull_request:
@@ -10,13 +6,8 @@ on:
     branches: [ main, master ]
 
 jobs:
-<<<<<<< HEAD
   syntax:
     name: Syntax (compile)
-=======
-  ruff:
-    name: Ruff (lint)
->>>>>>> master
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +19,6 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-<<<<<<< HEAD
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -61,14 +51,3 @@ jobs:
       - name: Run tests
         run: |
           python -c "print('no tests yet')"
-=======
-      - name: Install deps + ruff
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install ruff
-
-      - name: Ruff check
-        run: |
-          ruff check modules utils core
->>>>>>> master
