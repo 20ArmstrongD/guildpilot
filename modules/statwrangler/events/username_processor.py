@@ -1,8 +1,6 @@
 import json
 
 file_path = "/home/bot-vm/code/guildpilot/modules/statwrangler/json/usernames.json"
-=======
-file_path = "/home/bot-vm/code/guildpilot/modules/statwrangler/json/usernames.json
 
 def load_usernames():
     try:
