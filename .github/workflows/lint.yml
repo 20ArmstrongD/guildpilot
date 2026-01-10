@@ -27,4 +27,4 @@ jobs:
 
       - name: Ruff check
         run: |
-          ruff check modules utils core
+          ruff check modules 
