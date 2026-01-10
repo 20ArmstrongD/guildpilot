@@ -1,0 +1,9 @@
+{
+    "WELCOME_MESSAGES_BOTS": [
+        "Welcome, bot {member}! You have been assigned the role of {role}!\n",
+        "Hello, bot {member}! Enjoy your time in the server as a {role}!\n",
+        "Hey there, bot {member}! Glad to have you join us as a {role}!\n",
+        "Welcome, {member}! You are now part of the bot squad with the role of {role}!\n",
+        "Greetings, bot {member}! Hope you find your role as a {role} enjoyable!\n!"
+    ]
+}
