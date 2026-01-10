@@ -5,13 +5,14 @@ from zoneinfo import ZoneInfo
 import discord
 from discord.ext import commands, tasks
 
-from env_check import get_env_vars
-from streamer_list_load import load_streamers
-from twitch_stream_status import build_stream_cards, duration_hm, resolve_to_logins
+from .env_check import get_env_vars
+from .streamer_list_loader import load_streamers
+from .twitch_stream_status import build_stream_cards, duration_hm, resolve_to_logins
 
-cfg = get_env_vars()
-if not cfg:
-    raise SystemExit("Missing required environment variables. See logs above.")
+try:
+    config = get_env_vars()
+except RuntimeError as e:
+    raise SystemExit(str(e))
 
 intents = discord.Intents.default()
 intents.message_content = False  # not needed for this bot
@@ -21,12 +22,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 STREAM_STATE: dict[str, dict] = {}
 
 async def stream_watch_once():
-    channel = bot.get_channel(cfg.discord_channel_id)
+    channel = bot.get_channel(config.discord_channel_id)
     if channel is None or not isinstance(channel, (discord.TextChannel, discord.Thread)):
         print("[stream_watch] Invalid DISCORD_CHANNEL_ID or channel not found/accessible.")
         return
 
-    tz = ZoneInfo(cfg.timezone)
+    tz = ZoneInfo(config.timezone)
     streamers = load_streamers()
     #print(f"[DEBUG] Loaded streamers: {streamers}")
 
@@ -85,7 +86,7 @@ async def stream_watch_once():
 
         # If we have a message_id and not already ended, mark ended and update embed
         if state.get("message_id") and not state.get("ended"):
-            channel = bot.get_channel(cfg.discord_channel_id)
+            channel = bot.get_channel(config.discord_channel_id)
             if channel is None or not isinstance(channel, (discord.TextChannel, discord.Thread)):
                 continue
 
@@ -98,7 +99,7 @@ async def stream_watch_once():
                 continue
 
             # Build updated embed
-            tz = ZoneInfo(cfg.timezone)
+            tz = ZoneInfo(config.timezone)
             start_dt = state.get("start_dt") or dt.datetime.now(tz=tz)
             end_dt = dt.datetime.now(tz=tz)
             dur = duration_hm(start_dt, end_dt)
@@ -134,7 +135,7 @@ async def on_ready():
         except Exception as e:
             print(f"[appcmd] Global sync failed: {e!r}")
 
-@tasks.loop(seconds=cfg.poll_seconds)
+@tasks.loop(seconds=config.poll_seconds)
 async def stream_watch_loop():
     await stream_watch_once()
 
@@ -171,4 +172,4 @@ else:
                 pass
 
 if __name__ == "__main__":
-    bot.run(cfg.discord_token)
+    bot.run(config.discord_token)

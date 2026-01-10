@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional, Union
 
-STREAMERS_FILE = Path("/home/DiscordPi/code/discord_bots/Streaming-Bot/src/streamers.txt")
+STREAMERS_FILE = Path("modules/streamsentinel/streamers.txt")
 
 def load_streamers(path: Optional[Union[str, Path]] = None) -> list[str]:
     """
