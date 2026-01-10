@@ -6,8 +6,15 @@ on:
     branches: [ main, master ]
 
 jobs:
+
   syntax:
     name: Syntax (compile)
+
+  syntax:
+    name: Syntax (compile)
+
+  ruff:
+    name: Ruff (lint)
     runs-on: ubuntu-latest
 
     steps:
@@ -18,6 +25,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+
 
       - name: Install dependencies
         run: |
@@ -44,3 +52,4 @@ jobs:
       - name: Run tests
         run: |
           python -c "print('No tests yet — skipping test step')"
+
