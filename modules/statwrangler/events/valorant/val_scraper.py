@@ -1,118 +1,112 @@
 import logging
 import asyncio
-from pyppeteer import launch
 import re
-
+from playwright.async_api import async_playwright
 
 # Logging configuration
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%I:%M:%S %p",  # 12-hour clock with AM/PM
+    datefmt="%I:%M:%S %p",
 )
 
+CHROMIUM_PATH = "/usr/bin/chromium-browser"
 
-async def get_val_player_data(username):
+
+async def get_val_player_data(username: str):
     browser = None
-    rank = ranked_kd = rank_img = None  # Initialize variables to avoid undefined errors
+    rank = ranked_kd = rank_img = None
 
     try:
-        
         match = re.match(r"([^#]+)#(\d{4})", username)
         if not match:
             raise ValueError("invalid Riot ID format. Expected 'username#1234'")
-        
-        username, playercode = match.groups()
-        
-        # Launch a headless browser
-        url = f"https://tracker.gg/valorant/profile/riot/{username}%23{playercode}/overview"
-        browser = await launch(
-            headless=True,
-            executablePath="/usr/bin/chromium-browser",
-            args=["--no-sandbox"],
-        )
-        page = await browser.newPage()
 
-        # Set a longer timeout if needed
-        await page.goto(url, {"timeout": 60000})
+        riot_name, playercode = match.groups()
 
-        await page.waitForSelector("span", {"timeout": 60000})  # Wait for any span tag
+        url = f"https://tracker.gg/valorant/profile/riot/{riot_name}%23{playercode}/overview"
 
-        # Extract data using JavaScript evaluation
-        
-        # Extract KD
-        kd = await page.evaluate(
-    '''() => {
-        const xpath = "//span[contains(text(), 'KD')]/following-sibling::span/span";
-        const result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        return result ? result.textContent.trim() : null;
-    }'''
-)
-
-        # Extract Level
-        level_element = await page.querySelector(
-            "#app div[2] div[3] div main div[3] div[2] div[2] div[2] div[1] div div[2] div[2] div div div div[1] span[2]"
-        )
-        level = await level_element.getProperty("textContent") if level_element else None
-
-        # Extract User Profile Image
-        user_img_element = await page.querySelector(".user-avatar__image")
-        user_profile_img = (
-            await user_img_element.getProperty("src") if user_img_element else None
-        )
-
-        # Try to extract ranked data
-        try:
-            rank_element = await page.querySelector(
-                "#app div[2] div[3] div main div[3] div[2] div[2] div[2] div[1] div[1] div[2] div[2] div div[1] div div[1] span[2]"
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox"],
             )
-            rank = await rank_element.getProperty("textContent") if rank_element else None
+            page = await browser.new_page()
 
-            ranked_kd_element = await page.querySelector(
-                "#app div[2] div[3] div main div[3] div[2] div[2] div[2] div[1] div[1] div[3] div[2] div div[2] span[2] span"
-            )
-            ranked_kd = (
-                await ranked_kd_element.getProperty("textContent")
-                if ranked_kd_element
-                else None
+            await page.goto(url, wait_until="domcontentloaded", timeout=60_000)
+            await page.wait_for_selector("span", timeout=60_000)
+
+            # -------- Extract KD via XPath in evaluate (kept from your code) --------
+            kd = await page.evaluate(
+                """() => {
+                    const xpath = "//span[contains(text(), 'KD')]/following-sibling::span/span";
+                    const result = document
+                        .evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
+                        .singleNodeValue;
+                    return result ? result.textContent.trim() : null;
+                }"""
             )
 
-            rank_img_element = await page.querySelector(
-                "#app div[2] div[3] div main div[3] div[2] div[2] div[2] div[1] div[1] div[2] div[2] div div[1] img"
+            # -------- Extract Level --------
+            level_selector = (
+                "#app div[2] div[3] div main div[3] div[2] div[2] div[2] "
+                "div[1] div div[2] div[2] div div div div[1] span[2]"
             )
-            rank_img = (
-                await rank_img_element.getProperty("src") if rank_img_element else None
-            )
+            level_el = await page.query_selector(level_selector)
+            level = (await level_el.inner_text()).strip() if level_el else None
 
-        except Exception as e:
-            logging.warning("Unable to retrieve ranked data")
+            # -------- Extract User Profile Image --------
+            user_img_el = await page.query_selector(".user-avatar__image")
+            user_profile_img = await user_img_el.get_attribute("src") if user_img_el else None
 
-        # Log extracted data
-        elements = {
-            "KD": kd,
-            "Level": level,
-            "Rank": rank,
-            "Ranked KD": ranked_kd,
-        }
-        img_elements = {"Player Profile Pic": user_profile_img, "Ranked Image": rank_img}
+            # -------- Try ranked data --------
+            try:
+                rank_selector = (
+                    "#app div[2] div[3] div main div[3] div[2] div[2] div[2] "
+                    "div[1] div[1] div[2] div[2] div div[1] div div[1] span[2]"
+                )
+                rank_el = await page.query_selector(rank_selector)
+                rank = (await rank_el.inner_text()).strip() if rank_el else None
 
-        logging.info(f"{username} Siege Data Successfully Found!")
-        for key, value in elements.items():
-            if value:
-                logging.info(f"    *    {key}: {value}")
-        for key, value in img_elements.items():
-            if value and len(value) > 10:
-                logging.info(f"    *    {key}: URL has been grabbed")
+                ranked_kd_selector = (
+                    "#app div[2] div[3] div main div[3] div[2] div[2] div[2] "
+                    "div[1] div[1] div[3] div[2] div div[2] span[2] span"
+                )
+                ranked_kd_el = await page.query_selector(ranked_kd_selector)
+                ranked_kd = (await ranked_kd_el.inner_text()).strip() if ranked_kd_el else None
 
-        return kd, level, rank, ranked_kd, user_profile_img, rank_img
+                rank_img_selector = (
+                    "#app div[2] div[3] div main div[3] div[2] div[2] div[2] "
+                    "div[1] div[1] div[2] div[2] div div[1] img"
+                )
+                rank_img_el = await page.query_selector(rank_img_selector)
+                rank_img = await rank_img_el.get_attribute("src") if rank_img_el else None
+
+            except Exception:
+                logging.warning("Unable to retrieve ranked data")
+
+            # Log extracted data
+            elements = {"KD": kd, "Level": level, "Rank": rank, "Ranked KD": ranked_kd}
+            img_elements = {"Player Profile Pic": user_profile_img, "Ranked Image": rank_img}
+
+            logging.info(f"{riot_name} Valorant Data Successfully Found!")
+            for key, value in elements.items():
+                if value:
+                    logging.info(f"    *    {key}: {value}")
+            for key, value in img_elements.items():
+                if value and len(value) > 10:
+                    logging.info(f"    *    {key}: URL has been grabbed")
+
+            return kd, level, rank, ranked_kd, user_profile_img, rank_img
 
     except Exception as e:
-        logging.error(f"Error in Pyppeteer at line 107: {e}")
-        return None, None, None, None, None, None  # Return None values on error
+        logging.error(f"Error in Playwright: {e!r}")
+        return None, None, None, None, None, None
 
     finally:
+        # (async with closes it, but keep this as a safety net)
         if browser:
-            await browser.close()  # Ensure the browser closes
-
-
-
+            try:
+                await browser.close()
+            except Exception:
+                pass

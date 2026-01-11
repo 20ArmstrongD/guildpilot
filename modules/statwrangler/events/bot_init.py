@@ -40,70 +40,54 @@ async def on_guild_join(guild):
 
     print(f"✅ Joined new server: {guild.name} ({guild.id})")
 
+
 @bot.event
 async def on_Ready():
+    # ---- Basic startup logging ----
     try:
-        print(f'✅ Logged in as {bot.user}')  
-        
+        print(f"✅ Logged in as {bot.user}")
         for guild in bot.guilds:
-            print(f'Connected to: {guild.name} (ID: {guild.id})')
+            print(f"Connected to: {guild.name} (ID: {guild.id})")
     except Exception as e:
-            print(f'❌ Failed to list connected guilds: {e}')
+        print(f"❌ Failed to list connected guilds: {e!r}")
 
-        # --- Ensure all current guilds are tracked in the JSON file ---
+    # ---- Ensure all current guilds are tracked in the JSON file ----
     try:
-        # If file doesn't exist or is empty/corrupt, initialize it
+        # Ensure file exists and has valid JSON
         if not os.path.exists(GUILD_LOG_PATH) or os.path.getsize(GUILD_LOG_PATH) == 0:
             with open(GUILD_LOG_PATH, "w") as f:
-                json.dump({"servers": []}, f)
+                json.dump({"servers": []}, f, indent=4)
 
-        with open(GUILD_LOG_PATH, "r+") as f:
+        with open(GUILD_LOG_PATH, "r", encoding="utf-8") as f:
             try:
                 data = json.load(f)
             except json.JSONDecodeError:
                 data = {"servers": []}
 
-            existing_ids = {s["id"] for s in data["servers"]}
-            updated = False
+        if "servers" not in data or not isinstance(data["servers"], list):
+            data = {"servers": []}
 
-            for guild in bot.guilds:
-                if str(guild.id) not in existing_ids:
-                    data["servers"].append({
-                        "id": str(guild.id),
-                        "name": guild.name
-                    })
-                    updated = True
-                    print(f"📌 Added missing server from startup: {guild.name} ({guild.id})")
+        existing_ids = {str(s.get("id")) for s in data["servers"] if "id" in s}
+        updated = False
 
-            if updated:
-                f.seek(0)
+        for guild in bot.guilds:
+            if str(guild.id) not in existing_ids:
+                data["servers"].append({"id": str(guild.id), "name": guild.name})
+                updated = True
+                print(f"📌 Added missing server from startup: {guild.name} ({guild.id})")
+
+        if updated:
+            with open(GUILD_LOG_PATH, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4)
-                f.truncate()
-    except Exception as e:
-            print(f"❌ Failed to sync guilds.json with current guilds: {e}")
 
-        # --- Sync slash commands ---
+    except Exception as e:
+        print(f"❌ Failed to sync guilds.json with current guilds: {e!r}")
+
+    # ---- Py-cord note: no bot.tree.sync ----
+    # Py-cord registers slash commands automatically.
+    # Optional: show how many app commands are loaded
     try:
-        # Load the guild IDs from your JSON file
-        with open(GUILD_LOG_PATH, "r") as file:
-            data = json.load(file)
-            servers = data.get("servers", [])
-
-        if servers:
-            for server in servers:
-                guild_id = server.get("id")
-                guild_name = server.get("name")
-                if guild_id:
-                    try:
-                        guild = discord.Object(id=guild_id)
-                        await bot.tree.sync(guild=guild)
-                        print(f"✅ Synced commands for guild: {guild_name} (ID: {guild_id})")
-                    except Exception as e:
-                        print(f"⚠️ Failed to sync commands for guild {guild_name} (ID: {guild_id}): {e}")
-                else:
-                    print(f"⚠️ No ID found for server: {guild_name}")
-        else:
-            print("⚠️ No server data found in guild.json.")
-            
-    except Exception as e:
-        print(f"⚠️ Error during on_ready sync: {e}")
+        cmds = list(bot.walk_application_commands())
+        print(f"✅ Loaded {len(cmds)} slash command(s) (py-cord).")
+    except Exception:
+        pass

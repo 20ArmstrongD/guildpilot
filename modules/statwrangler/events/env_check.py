@@ -1,21 +1,27 @@
-from dotenv import load_dotenv
 import os
-import logging
+from dataclasses import dataclass
+from pathlib import Path
+from dotenv import load_dotenv
 
-def checkEnvVar():
-    env_varibles = {
-        "DISCORD_BOT_TOKEN" : os.getenv('DISCORD_BOT_TOKEN'),
-        }
 
-    for var_name, var_value in env_varibles.items():
-        if var_value is None:
-            try:
-                logging.error(f'{var_name} is not set correctly in .env file')
-                raise ValueError(f'{var_name} is not set correctly in .env file')
-            except Exception as e:
-                logging.error('Unable to do Enviorment variable value check')
-        else:
-            logging.info(f'{var_name} is ✅')
 
-# Use for testing function by itself
-# checkEnvVar()
+# Explicitly load .env from project root
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+load_dotenv(PROJECT_ROOT / ".env", override=False)
+
+# print("\n\n",PROJECT_ROOT)
+
+@dataclass(frozen=True)
+class EnvConfig:
+    discord_token: str
+
+def get_env_vars() -> EnvConfig:
+    def require(name: str) -> str:
+        value = os.getenv(name)
+        if not value:
+            raise RuntimeError(f"Missing required env var: {name}")
+        return value
+
+    return EnvConfig(
+        discord_token=require("DISCORD_TOKEN")
+    )

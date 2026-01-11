@@ -70,6 +70,7 @@ numpy==2.2.1
 selenium==4.27.1
 webdriver_manager==4.0.2
 PySocks==1.7.1
+validators==0.35.0
 
 # Selenium runtime deps
 trio==0.28.0
