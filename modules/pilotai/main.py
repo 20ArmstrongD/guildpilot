@@ -1,22 +1,17 @@
 import discord
-# Modern OpenAI SDK import:
 from openai import OpenAI
-import db_logger
 from discord.ext import commands
-from dotenv import load_dotenv
+from .env_check import get_env_vars
 import os
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-# Load environment variables
-load_dotenv(dotenv_path='environmental/.env')
+try:
+    config = get_env_vars()
+except RuntimeError as e:
+    raise SystemExit(str(e))
 
-# ---- OpenAI client (v1+) ----
-# Looks for OPENAI_KEY first, then OPENAI_API_KEY as a fallback
-client = OpenAI(
-    api_key=os.getenv('OPENAI_KEY') or os.getenv('OPENAI_API_KEY'),
-    organization=os.getenv('OPENAI_ORG')  # optional
-)
+client = OpenAI()  # reads OPENAI_API_KEY automatically
 
 # Choose your model centrally (env override supported)
 MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -103,11 +98,18 @@ def llm_reply(history):
     return resp.choices[0].message.content if resp.choices else "No response from OpenAI."
 
 # ================== Slash command: start a new conversation ==================
-@bot.tree.command(name='ask-the-pilot', description="Talk to the pilot, he can probably help")
-async def askPilot(interaction: discord.Interaction, message: str):
-    await interaction.response.defer(thinking=True)
+@bot.slash_command(
+    name="ask-the-pilot",
+    description="Talk to the pilot, he can probably help"
+)
+async def askPilot(ctx, message: str):
+    # Start "thinking..."
     try:
-        # New conversation history
+        await ctx.defer(ephemeral=True)
+    except Exception:
+        pass
+
+    try:
         history = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": message},
@@ -115,18 +117,22 @@ async def askPilot(interaction: discord.Interaction, message: str):
 
         reply = llm_reply(history)
 
-        # Log
-        user_name = interaction.user.display_name
-        server_location = interaction.guild.name
-        channel_location = interaction.channel.name
-        db_logger.log_message(user_name, message, reply, server_location, channel_location)
+        user_name = ctx.author.display_name
+        server_location = ctx.guild.name if ctx.guild else "DM"
+        channel_location = ctx.channel.name if hasattr(ctx.channel, "name") else "DM"
 
-        # Send + capture the bot's message id as the root of this conversation
+        # ✅ End thinking — only user sees this
+        try:
+            await ctx.respond("✈️ Response posted below.", ephemeral=True)
+        except Exception:
+            pass
+
+        # Post the real response publicly (reliable Message object)
         if len(reply) > 2000:
-            sent_msg = await interaction.followup.send(reply[:2000])
-            await send_long_message(interaction.channel, reply[2000:])
+            sent_msg = await ctx.channel.send(reply[:2000])
+            await send_long_message(ctx.channel, reply[2000:])
         else:
-            sent_msg = await interaction.followup.send(reply)
+            sent_msg = await ctx.channel.send(reply)
 
         root_id = sent_msg.id
 
@@ -134,16 +140,21 @@ async def askPilot(interaction: discord.Interaction, message: str):
         convos[root_id] = {
             "history": trim_history(history),
             "last_active": utcnow(),
-            "channel_id": interaction.channel.id,
+            "channel_id": ctx.channel.id,
         }
         msg_to_root[root_id] = root_id
 
-        print(f"user: {user_name}\nbot: {reply[:120]}...\nServer: {server_location}, Channel: {channel_location}")
+        print(
+            f"user: {user_name}\n"
+            f"bot: {reply[:120]}...\n"
+            f"Server: {server_location}, Channel: {channel_location}"
+        )
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error: {e!r}")
+        # ✅ Also stop thinking on error (ephemeral)
         try:
-            await interaction.followup.send("There was an error processing your request.")
+            await ctx.respond("There was an error processing your request.", ephemeral=True)
         except Exception:
             pass
 
@@ -206,16 +217,16 @@ async def on_message(message: discord.Message):
             msg_to_root[ref.id] = root_id
 
             # Log this turn (best-effort)
-            try:
-                db_logger.log_message(
-                    message.author.display_name,
-                    message.content,
-                    reply,
-                    message.guild.name if message.guild else "DM",
-                    getattr(message.channel, "name", "DM"),
-                )
-            except Exception as e:
-                print(f"DB log error: {e}")
+            # try:
+            #     db_logger.log_message(
+            #         message.author.display_name,
+            #         message.content,
+            #         reply,
+            #         message.guild.name if message.guild else "DM",
+            #         getattr(message.channel, "name", "DM"),
+            #     )
+            # except Exception as e:
+            #     print(f"DB log error: {e}")
 
             return  # don't fall through to command processing
 
@@ -226,7 +237,6 @@ async def on_message(message: discord.Message):
 @bot.event
 async def on_ready():
     try:
-        await bot.tree.sync()
         print(f'Logged in as {bot.user}')
         print('slash commands registered')
     except Exception as e:
