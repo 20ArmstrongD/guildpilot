@@ -184,7 +184,7 @@ async def pull_stats(ctx, game: str, username: str, platform: str = None):
         
         embed.add_field(
             name="Overall Stats",
-            value=f"* Level: {level}\n* KD Ratio: {kd}\n*",
+            value=f"* Level: {level}\n* KD Ratio: {kd}\n",
             inline=False,
         )
         

@@ -87,7 +87,7 @@ async def get_r6siege_player_data(username: str, platform: str):
                 "xpath=//*[@id='app']/div[2]/div[3]/div/main/div[2]/div[1]/div[2]/header/div[4]/div[1]/div[1]/div/img"
             ).first
             await user_profile_img_locator.wait_for(state="visible", timeout=10000)
-            user_profile_img = (await user_profile_img_locator.inner_text()).strip()
+            user_profile_img = await user_profile_img_locator.get_attribute("src")
 
             rank = ranked_kd = rank_img = None
 
