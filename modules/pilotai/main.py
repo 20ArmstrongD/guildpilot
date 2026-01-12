@@ -146,8 +146,8 @@ async def askPilot(ctx, message: str):
 
         print(
             f"user: {user_name}\n"
-            f"bot: {reply[:120]}...\n"
-            f"Server: {server_location}, Channel: {channel_location}"
+            f"pilotAI: {reply[:120]}...\n"
+            f"Server: {server_location}\nChannel: {channel_location}"
         )
 
     except Exception as e:
@@ -237,8 +237,24 @@ async def on_message(message: discord.Message):
 @bot.event
 async def on_ready():
     try:
-        print(f'Logged in as {bot.user}')
-        print('slash commands registered')
+        print("\n" + "=" * 60)
+        print(f"[READY] Logged in as: {bot.user} (id={bot.user.id})")
+        print(f"[READY] py-cord discord module: {discord.__file__}")
+        print(f"[READY] discord version: {getattr(discord, '__version__', 'unknown')}")
+        print(f"[READY] Latency: {round(bot.latency * 1000)} ms")
+
+        # Guilds the bot is currently connected to
+        print(f"[READY] Connected guilds: {len(bot.guilds)}")
+        for g in bot.guilds:
+            print(f"  - {g.name} (id={g.id}) | members≈{getattr(g, 'member_count', 'unknown')}")
+
+        # Application / slash commands loaded locally
+        cmds = getattr(bot, "application_commands", [])
+        print(f"[READY] Loaded application commands (local): {len(cmds)}")
+        for c in cmds:
+            guild_ids = getattr(c, f"guild_ids", None)
+            desc = getattr(c, "description", "")
+            print(f"  - /{c.name} | guild_ids={guild_ids} | desc='{desc}'")
     except Exception as e:
         print(f"Error syncing commands: {e}")
 
