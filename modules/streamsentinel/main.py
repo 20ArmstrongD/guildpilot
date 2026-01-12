@@ -1,4 +1,3 @@
-import asyncio
 import datetime as dt
 from zoneinfo import ZoneInfo
 
@@ -47,7 +46,7 @@ async def stream_watch_once():
 
     live_logins = set(live_cards.keys())
     # Keep state keyed by login
-    known_logins = set(STREAM_STATE.keys())
+    # known_logins = set(STREAM_STATE.keys())
 
     # Handle new lives (start events)
     for login in resolved_logins:
