@@ -7,7 +7,7 @@ from .events import (
     get_env_vars,
     botstuff,
     intent,
-    on_Ready,
+    on_ready_bot,
     get_r6siege_player_data,
     get_val_player_data,  # (not used below, but leaving since it's in your events)
     generate_link,
@@ -43,7 +43,7 @@ def validate_url(url: str | None):
 
 @bot.event
 async def on_ready():
-    await on_Ready()
+    await on_ready_bot()
 
 
 @bot.event

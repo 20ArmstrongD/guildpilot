@@ -1,5 +1,5 @@
 import datetime as _dt
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 import requests
 
 from .twitch_auth import twitch_headers

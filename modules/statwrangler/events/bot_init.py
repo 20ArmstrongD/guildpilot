@@ -1,7 +1,7 @@
-import discord
+# import discord
 from discord.ext import commands
 import os
-import requests
+# import requests
 import json
 from .intents import intent, botstuff
 
@@ -42,7 +42,7 @@ async def on_guild_join(guild):
 
 
 @bot.event
-async def on_Ready():
+async def on_ready_bot():
     # ---- Basic startup logging ----
     try:
         print(f"✅ Logged in as {bot.user}")
@@ -79,6 +79,28 @@ async def on_Ready():
         if updated:
             with open(GUILD_LOG_PATH, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=4)
+
+        try:
+            print("\n" + "=" * 60)
+            print(f"[READY] Logged in as: {bot.user} (id={bot.user.id})")
+            print(f"[READY] py-cord discord module: {discord.__file__}")
+            print(f"[READY] discord version: {getattr(discord, '__version__', 'unknown')}")
+            print(f"[READY] Latency: {round(bot.latency * 1000)} ms")
+
+            # Guilds the bot is currently connected to
+            print(f"[READY] Connected guilds: {len(bot.guilds)}")
+            for g in bot.guilds:
+                print(f"  - {g.name} (id={g.id}) | members≈{getattr(g, 'member_count', 'unknown')}")
+
+            # Application / slash commands loaded locally
+            cmds = getattr(bot, "application_commands", [])
+            print(f"[READY] Loaded application commands (local): {len(cmds)}")
+            for c in cmds:
+                guild_ids = getattr(c, "guild_ids", None)
+                desc = getattr(c, "description", "")
+                print(f"  - /{c.name} | guild_ids={guild_ids} | desc='{desc}'")
+        except Exception as e:
+            print(f"Error syncing commands: {e}")
 
     except Exception as e:
         print(f"❌ Failed to sync guilds.json with current guilds: {e!r}")
