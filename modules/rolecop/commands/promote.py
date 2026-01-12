@@ -5,7 +5,6 @@ import logging
 from .elements import (
     EMOJI_APPROVE,
     EMOJI_DENY,
-    guild_id
 )
 
 
