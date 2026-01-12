@@ -4,9 +4,7 @@ import logging
 from .elements import (
     EMOJI_APPROVE,
     EMOJI_DENY,
-    GUILD_ID,
-    bot,
-    log_request_promote_demote
+    #log_request_promote_demote,
 )
 
 
@@ -15,7 +13,6 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True  
 
-bot = bot
 
 # Function to demote a member
 async def demote_member(interaction, member, role):
@@ -39,7 +36,8 @@ async def demote_member(interaction, member, role):
         logging.error(f"HTTP Exception while demoting {member.display_name} from {role.name}: {e}")
 
 
-def register_demote_command(bot):
+def register_demote_command(bot: commands.Bot) -> None:
+    cfg = get_config()
     # Slash command: Demote a member
     @bot.tree.command(guild=discord.Object(id=GUILD_ID), name="demote", description="Request to demote a <member> from <role>")
     async def demote(interaction: discord.Interaction, member: discord.Member, role: discord.Role):

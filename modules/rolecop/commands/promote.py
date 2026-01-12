@@ -1,14 +1,13 @@
-import discord 
+import discord
 from discord.ext import commands
 import logging
 
 from .elements import (
     EMOJI_APPROVE,
     EMOJI_DENY,
-    GUILD_ID,
-    bot,
-    log_request_promote_demote
+    #log_request_promote_demote,
 )
+
 
 
 # Function to promote a member
@@ -21,6 +20,7 @@ async def promote_member(interaction, member, role):
 
 
 def register_promote_command(bot):
+    cfg = get_config()
     # Slash command: Promote a member
     @bot.tree.command(guild=discord.Object(id=GUILD_ID), name="promote", description="Request to promote a <member> from a <role>")
     async def promote(interaction: discord.Interaction, member: discord.Member, role: discord.Role):
