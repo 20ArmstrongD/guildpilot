@@ -1,8 +1,16 @@
 # 🤖 GuildPilot
 
-![CI](https://github.com/20ArmstrongD/guildpilot/actions/workflows/ci.yml/badge.svg)
-![Python](https://img.shields.io/badge/python-3.11-blue)
+![CI/CD — Build & Test](https://github.com/20ArmstrongD/guildpilot/actions/workflows/ci.yml/badge.svg)
+![CI/CD — Code Quality](https://github.com/20ArmstrongD/guildpilot/actions/workflows/lint.yml/badge.svg)
+![Security — Secret Detection](https://github.com/20ArmstrongD/guildpilot/actions/workflows/gitleaks.yml/badge.svg)
+![Security — Dependency Audit](https://github.com/20ArmstrongD/guildpilot/actions/workflows/pip-audit.yml/badge.svg)
+![Security — Code Analysis](https://github.com/20ArmstrongD/guildpilot/actions/workflows/codeql.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/github/license/20ArmstrongD/guildpilot)
+
+A modular, production-ready Discord bot ecosystem built with Python and py-cord, featuring CI/CD, automated testing, and security-first workflows.
+
+
 
 **GuildPilot** is an all-in-one Discord bot designed to manage server operations through a modular, scalable architecture.  
 It combines member role automation, game stat lookups, AI chat capabilities, and streaming notifications into a single bot identity.

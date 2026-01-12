@@ -11,3 +11,4 @@ webdriver-manager==4.0.2
 ffmpeg-python==0.2.0
 numpy==2.2.1
 validators==0.35.0
+pytest==9.0.2
