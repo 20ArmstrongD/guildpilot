@@ -6,7 +6,7 @@
 ![Security — Dependency Audit](https://github.com/20ArmstrongD/guildpilot/actions/workflows/pip-audit.yml/badge.svg)
 ![Security — Code Analysis](https://github.com/20ArmstrongD/guildpilot/actions/workflows/codeql.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-![License](https://img.shields.io/github/license/20ArmstrongD/guildpilot)
+<!-- ![License](https://img.shields.io/github/license/20ArmstrongD/guildpilot)  -->
 
 A modular, production-ready Discord bot ecosystem built with Python and py-cord, featuring CI/CD, automated testing, and security-first workflows.
 
