@@ -73,7 +73,7 @@ async def load_commands(bot: commands.Bot) -> None:
 
 def main() -> None:
     # Load config at runtime (safe for pytest/CI imports)
-    cfg = get_config()
+    get_config()
 
     # Build bot at runtime
     bot = build_bot()

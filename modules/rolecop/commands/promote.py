@@ -5,7 +5,7 @@ import logging
 from .elements import (
     EMOJI_APPROVE,
     EMOJI_DENY,
-    #log_request_promote_demote,
+    guild_id
 )
 
 
@@ -16,13 +16,13 @@ async def promote_member(interaction, member, role):
     await interaction.followup.send(f"{member.display_name} has been promoted to {role.name}.", ephemeral=True)
     
     # Log the promotion request
-    log_request_promote_demote(interaction.user.display_name, f"Promoted {member.display_name} to {role.name}", True, interaction.user.display_name)
+    logging.INFO(interaction.user.display_name, f"Promoted {member.display_name} to {role.name}", True, interaction.user.display_name)
 
 
 def register_promote_command(bot):
-    cfg = get_config()
+    get_config()
     # Slash command: Promote a member
-    @bot.tree.command(guild=discord.Object(id=GUILD_ID), name="promote", description="Request to promote a <member> from a <role>")
+    @bot.tree.command(guild=discord.Object(id=guild_id), name="promote", description="Request to promote a <member> from a <role>")
     async def promote(interaction: discord.Interaction, member: discord.Member, role: discord.Role):
         await interaction.response.defer()
         admin_role = discord.utils.get(interaction.guild.roles, name="Admin")
@@ -31,7 +31,7 @@ def register_promote_command(bot):
         if admin_role in interaction.user.roles:
             await promote_member(interaction, member, role)
             logging.info(f'{interaction.user.display_name} aka: Admin promoted {member.display_name} to {role.name}.')
-            log_request_promote_demote(interaction.user.display_name, f"Promoted {member.display_name} to {role.name}", True, interaction.user.display_name)
+            logging.INFO(interaction.user.display_name, f"Promoted {member.display_name} to {role.name}", True, interaction.user.display_name)
         else:
             # Notify admins for approval
             admins = [admin for admin in interaction.guild.members if admin_role in admin.roles]
@@ -56,11 +56,11 @@ def register_promote_command(bot):
                         if str(reaction.emoji) == EMOJI_APPROVE:
                             await promote_member(interaction, member, role)
                             logging.info(f'{user.display_name} approved promotion of {member.display_name} to {role.name}.')
-                            log_request_promote_demote(user.display_name, f"Approved promotion of {member.display_name} to {role.name}", True, user.display_name)
+                            logging.INFO(user.display_name, f"Approved promotion of {member.display_name} to {role.name}", True, user.display_name)
                         else:
                             await interaction.followup.send(f"Promotion of {member.display_name} to {role.name} has been denied.", ephemeral=True)
                             logging.info(f'{user.display_name} denied promotion of {member.display_name} to {role.name}.')
-                            log_request_promote_demote(user.display_name, f"Denied promotion of {member.display_name} to {role.name}", False, user.display_name)
+                            logging.INFO(user.display_name, f"Denied promotion of {member.display_name} to {role.name}", False, user.display_name)
                     except Exception as e:
                         logging.error(f"Error sending approval message: {e}")
                         await interaction.followup.send("There was an error processing the approval request.", ephemeral=True)

@@ -61,6 +61,11 @@ def get_config() -> RolecopConfig:
         welcome_channel_id=welcome_channel_id,
         welcome_member_messages_path=os.getenv("WELCOME_MEMBER_MESSAGES"),
         welcome_bot_messages_path=os.getenv("WELCOME_BOT_MESSAGES"),
+        EMOJI_APPROVE = EMOJI_APPROVE,
+        EMOJI_DENY = EMOJI_DENY,
+        BOTS_ROLE_NAME = BOTS_ROLE_NAME,
+        STALLIONS_ROLE_NAME = STALLIONS_ROLE_NAME,
+        GANG_ROLE_NAME = GANG_ROLE_NAME
     )
 
     # Optional sanity logs (safe at runtime)
