@@ -7,7 +7,7 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 def main() -> None:
     try:
-        config = get_env_vars()
+        get_env_vars()
     except RuntimeError as e:
         raise SystemExit(str(e))
 
@@ -15,6 +15,7 @@ def main() -> None:
 
     # Choose your model centrally (env override supported)
     MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
 
     # Intents
     intents = discord.Intents.default()
@@ -252,7 +253,7 @@ def main() -> None:
             cmds = getattr(bot, "application_commands", [])
             print(f"[READY] Loaded application commands (local): {len(cmds)}")
             for c in cmds:
-                guild_ids = getattr(c, f"guild_ids", None)
+                guild_ids = getattr(c, "guild_ids", None)
                 desc = getattr(c, "description", "")
                 print(f"  - /{c.name} | guild_ids={guild_ids} | desc='{desc}'")
         except Exception as e:
