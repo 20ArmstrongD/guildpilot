@@ -1,4 +1,4 @@
-from .bot_init import on_ready_bot as on_ready_bot
+# from .bot_init import on_ready_bot as on_ready_bot
 from .env_check import get_env_vars as get_env_vars
 from .fortnite.fort_scraper import get_fortnite_player_data as get_fortnite_player_data
 from .fortnite.link_gen import generate_link as generate_link
