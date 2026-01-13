@@ -2,15 +2,7 @@
     "servers": [
         {
             "id": "1190050102648262726",
-            "name": "Bot test servewr"
-        },
-        {
-            "id": "1278493294506016921",
-            "name": "The Mac(intosh) Shack"
-        },
-        {
-            "id": "1331441088313036801",
-            "name": "Wags's server"
+            "name": "Bot test server"
         }
     ]
 }

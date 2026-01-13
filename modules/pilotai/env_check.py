@@ -11,6 +11,7 @@ load_dotenv(PROJECT_ROOT / ".env", override=False)
 
 @dataclass(frozen=True)
 class EnvConfig:
+    discord_token: str
     openai_api_key: str
     openai_org: str | None = None
 
@@ -23,6 +24,7 @@ def get_env_vars() -> EnvConfig:
         return value
 
     return EnvConfig(
+        discord_token=require("DISCORD_TOKEN"),
         openai_api_key=require("OPENAI_API_KEY"),
         openai_org=os.getenv("OPENAI_ORG"),
     )
