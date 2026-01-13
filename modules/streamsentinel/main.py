@@ -9,6 +9,5 @@ Run instead:
 
 if __name__ == "__main__":
     raise SystemExit(
-        "StreamSentinel is an extension. "
-        "Run `python -m modules.bot.main` instead."
+        "StreamSentinel is an extension. Run `python -m modules.bot.main` instead."
     )

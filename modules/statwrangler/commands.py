@@ -64,7 +64,9 @@ class StatWrangler(commands.Cog):
         return matches[:25]
 
     # ---------------- Slash command (py-cord) ----------------
-    @commands.slash_command(name="game_stats", description="Fetch game stats for a player")
+    @commands.slash_command(
+        name="game_stats", description="Fetch game stats for a player"
+    )
     @discord.option(
         "game", description="Choose a game", choices=["siege", "fortnite", "valorant"]
     )
@@ -79,7 +81,13 @@ class StatWrangler(commands.Cog):
         required=False,
         default=None,
     )
-    async def pull_stats(self, ctx: discord.ApplicationContext, game: str, username: str, platform: str = None):
+    async def pull_stats(
+        self,
+        ctx: discord.ApplicationContext,
+        game: str,
+        username: str,
+        platform: str = None,
+    ):
         # Prevent Discord interaction timeout
         try:
             await ctx.defer()
@@ -119,7 +127,9 @@ class StatWrangler(commands.Cog):
         }
 
         if game not in game_scrapers:
-            await ctx.respond("Game not supported. Choose siege, fortnite, or valorant.")
+            await ctx.respond(
+                "Game not supported. Choose siege, fortnite, or valorant."
+            )
             return
 
         scraper_func = game_scrapers[game]["func"]
@@ -135,9 +145,14 @@ class StatWrangler(commands.Cog):
         if num_args == 2:
             logger.info("Fetching %s stats for %s on %s...", game, username, platform)
 
-            kd, level, rank, ranked_kd, user_profile_img, rank_img = await get_r6siege_player_data(
-                username, platform
-            )
+            (
+                kd,
+                level,
+                rank,
+                ranked_kd,
+                user_profile_img,
+                rank_img,
+            ) = await get_r6siege_player_data(username, platform)
 
             kd = kd or "N/A"
             level = level or "N/A"
@@ -206,7 +221,9 @@ class StatWrangler(commands.Cog):
                 await ctx.respond(embed=embed)
                 return
 
-        await ctx.respond(f"Could not fetch stats for {username} in {game.capitalize()}.")
+        await ctx.respond(
+            f"Could not fetch stats for {username} in {game.capitalize()}."
+        )
 
 
 def setup(bot: commands.Bot):

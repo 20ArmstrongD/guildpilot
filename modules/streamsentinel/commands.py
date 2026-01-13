@@ -21,8 +21,12 @@ class StreamSentinel(commands.Cog):
 
     async def stream_watch_once(self) -> None:
         channel = self.bot.get_channel(self.config.discord_channel_id)
-        if channel is None or not isinstance(channel, (discord.TextChannel, discord.Thread)):
-            print("[stream_watch] Invalid DISCORD_CHANNEL_ID or channel not found/accessible.")
+        if channel is None or not isinstance(
+            channel, (discord.TextChannel, discord.Thread)
+        ):
+            print(
+                "[stream_watch] Invalid DISCORD_CHANNEL_ID or channel not found/accessible."
+            )
             return
 
         tz = ZoneInfo(self.config.timezone)
@@ -46,7 +50,9 @@ class StreamSentinel(commands.Cog):
             card = live_cards.get(key)
             state = self.stream_state.get(key)
 
-            if card and (not state or state.get("message_id") is None or state.get("ended")):
+            if card and (
+                not state or state.get("message_id") is None or state.get("ended")
+            ):
                 embed = discord.Embed(
                     title=f"{card['display_name']} is LIVE",
                     description=card["title"] or "Streaming now",
@@ -59,7 +65,9 @@ class StreamSentinel(commands.Cog):
                     inline=True,
                 )
                 embed.add_field(name="Category", value=card["game_name"], inline=True)
-                embed.add_field(name="Started", value=card["started_at_local_str"], inline=True)
+                embed.add_field(
+                    name="Started", value=card["started_at_local_str"], inline=True
+                )
 
                 if card.get("box_art_url"):
                     embed.set_thumbnail(url=card["box_art_url"])
@@ -91,22 +99,32 @@ class StreamSentinel(commands.Cog):
                 end_dt = dt.datetime.now(tz=tz)
                 dur = duration_hm(start_dt, end_dt)
 
-                embed = msg.embeds[0] if msg.embeds else discord.Embed(title="Stream Update")
+                embed = (
+                    msg.embeds[0]
+                    if msg.embeds
+                    else discord.Embed(title="Stream Update")
+                )
 
                 # Remove any prior "Ended"/"Duration" fields to avoid duplicates
-                filtered_fields = [f for f in embed.fields if f.name not in {"Ended", "Duration"}]
+                filtered_fields = [
+                    f for f in embed.fields if f.name not in {"Ended", "Duration"}
+                ]
                 embed.clear_fields()
                 for f in filtered_fields:
                     embed.add_field(name=f.name, value=f.value, inline=f.inline)
 
-                embed.add_field(name="Ended", value=end_dt.strftime("%-I:%M %p %Z"), inline=True)
+                embed.add_field(
+                    name="Ended", value=end_dt.strftime("%-I:%M %p %Z"), inline=True
+                )
                 embed.add_field(name="Duration", value=dur, inline=True)
                 embed.set_footer(text="Stream ended")
 
                 try:
                     await msg.edit(embed=embed)
                     self.stream_state[key]["ended"] = True
-                    print(f"[stream_watch] Marked ended for {key} -> message {msg.id} ({dur})")
+                    print(
+                        f"[stream_watch] Marked ended for {key} -> message {msg.id} ({dur})"
+                    )
                 except discord.HTTPException:
                     pass
 
@@ -124,7 +142,9 @@ class StreamSentinel(commands.Cog):
     async def on_ready(self) -> None:
         # Avoid “NoneType user” issues by logging from the real running bot
         # print(f"[streamsentinel] Ready as {self.bot.user} (id={self.bot.user.id})")
-        print(f"[streamsentinel] will be polling every {self.config.poll_seconds}s in channel {self.config.discord_channel_id}")
+        print(
+            f"[streamsentinel] will be polling every {self.config.poll_seconds}s in channel {self.config.discord_channel_id}"
+        )
 
     # ---------- loop ----------
     @tasks.loop(seconds=60)  # overridden in __init__ using change_interval

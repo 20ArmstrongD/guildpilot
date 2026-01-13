@@ -7,9 +7,10 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]  # guild_tracker.py -> guilds -> core -> modules -> PROJECT
+PROJECT_ROOT = (
+    Path(__file__).resolve().parents[3]
+)  # guild_tracker.py -> guilds -> core -> modules -> PROJECT
 GUILD_LOG_PATH = PROJECT_ROOT / "modules" / "core" / "guilds" / "guilds.json"
-
 
 
 @dataclass
@@ -50,7 +51,11 @@ class GuildTracker(commands.Cog):
 
     def _upsert_guilds(self, guilds: list[discord.Guild]) -> None:
         data = self._load()
-        by_id = {str(s.get("id")): s for s in data["servers"] if isinstance(s, dict) and "id" in s}
+        by_id = {
+            str(s.get("id")): s
+            for s in data["servers"]
+            if isinstance(s, dict) and "id" in s
+        }
 
         now = self._utc_now()
         for g in guilds:

@@ -30,6 +30,5 @@ def get_env_vars() -> EnvConfig:
     )
 
 
-
 # if __name__ == "__main__":
 #     config = get_env_vars()

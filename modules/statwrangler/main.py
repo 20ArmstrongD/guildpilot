@@ -9,6 +9,5 @@ Run instead:
 
 if __name__ == "__main__":
     raise SystemExit(
-        "StatWrangler is an extension. "
-        "Run `python -m modules.bot.main` instead."
+        "StatWrangler is an extension. Run `python -m modules.bot.main` instead."
     )

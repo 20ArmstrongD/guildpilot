@@ -31,14 +31,12 @@ def main():
     bot = discord.Bot(intents=intents)
 
     modules_to_load = [
-    ("core.guilds", "modules.core.guilds.guilds_tracker"),
-    ("pilotai", "modules.pilotai.commands"),
-    ("statwrangler", "modules.statwrangler.commands"),
-    ("streamsentinel", "modules.streamsentinel.commands"),
-    ("rolecop", "modules.rolecop")
-   
-
-]
+        ("core.guilds", "modules.core.guilds.guilds_tracker"),
+        ("pilotai", "modules.pilotai.commands"),
+        ("statwrangler", "modules.statwrangler.commands"),
+        ("streamsentinel", "modules.streamsentinel.commands"),
+        ("rolecop", "modules.rolecop"),
+    ]
 
     loaded = []
     for name, path in modules_to_load:
@@ -61,5 +59,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

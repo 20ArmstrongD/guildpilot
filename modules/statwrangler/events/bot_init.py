@@ -59,7 +59,9 @@ class StatWranglerBotInit(commands.Cog):
             if str(guild.id) not in existing_ids:
                 data["servers"].append({"id": str(guild.id), "name": guild.name})
                 updated = True
-                print(f"📌 Added missing server from startup: {guild.name} ({guild.id})")
+                print(
+                    f"📌 Added missing server from startup: {guild.name} ({guild.id})"
+                )
 
         if updated:
             self._write(data)

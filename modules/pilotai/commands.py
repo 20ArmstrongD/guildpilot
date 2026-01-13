@@ -85,7 +85,9 @@ class PilotAI(commands.Cog):
                 for root_id in to_delete:
                     del self.convos[root_id]
                     # remove any msg_to_root entries that map to this root
-                    for mid in [k for k, v in list(self.msg_to_root.items()) if v == root_id]:
+                    for mid in [
+                        k for k, v in list(self.msg_to_root.items()) if v == root_id
+                    ]:
                         del self.msg_to_root[mid]
             except Exception as e:
                 print(f"[pilotai.cleanup] error: {e!r}")
@@ -95,7 +97,9 @@ class PilotAI(commands.Cog):
     # py-cord calls this when the cog is added (2.6+)
     def cog_load(self) -> None:
         if self._cleanup_task is None:
-            self._cleanup_task = self.bot.loop.create_task(self.cleanup_conversations_task())
+            self._cleanup_task = self.bot.loop.create_task(
+                self.cleanup_conversations_task()
+            )
 
     # ================== Slash command: start a new conversation ==================
     @commands.slash_command(
@@ -119,7 +123,9 @@ class PilotAI(commands.Cog):
 
             user_name = ctx.author.display_name
             server_location = ctx.guild.name if ctx.guild else "DM"
-            channel_location = ctx.channel.name if hasattr(ctx.channel, "name") else "DM"
+            channel_location = (
+                ctx.channel.name if hasattr(ctx.channel, "name") else "DM"
+            )
 
             # End thinking — only user sees this
             try:
@@ -154,7 +160,9 @@ class PilotAI(commands.Cog):
         except Exception as e:
             print(f"[pilotai] Error: {e!r}")
             try:
-                await ctx.respond("There was an error processing your request.", ephemeral=True)
+                await ctx.respond(
+                    "There was an error processing your request.", ephemeral=True
+                )
             except Exception:
                 pass
 
@@ -166,11 +174,15 @@ class PilotAI(commands.Cog):
             return
 
         # If user replies to a bot message, continue that conversation
-        if message.reference and (message.reference.resolved or message.reference.message_id):
+        if message.reference and (
+            message.reference.resolved or message.reference.message_id
+        ):
             try:
                 ref = message.reference.resolved
                 if not ref:
-                    ref = await message.channel.fetch_message(message.reference.message_id)
+                    ref = await message.channel.fetch_message(
+                        message.reference.message_id
+                    )
             except Exception:
                 ref = None
 
@@ -185,7 +197,9 @@ class PilotAI(commands.Cog):
                     ]
                 else:
                     meta = self.convos[root_id]
-                    history = meta["history"] + [{"role": "user", "content": message.content}]
+                    history = meta["history"] + [
+                        {"role": "user", "content": message.content}
+                    ]
 
                 try:
                     reply = self.llm_reply(history)
