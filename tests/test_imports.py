@@ -38,7 +38,7 @@ def test_import_entrypoints() -> None:
     they should only define functions/classes.
     """
     _import("modules.pilotai.main")
-    _import("modules.rolecop.main")
+    _import("modules.rolecop")
 
     # If these modules have specific main files, import those instead.
     # Otherwise, importing the package is still useful.
