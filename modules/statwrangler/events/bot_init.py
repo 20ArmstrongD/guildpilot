@@ -1,6 +1,8 @@
 import discord
+
 # from discord.ext import commands
 import os
+
 # import requests
 import json
 from .intents import intent, botstuff
@@ -14,6 +16,7 @@ intents.guilds = True
 bot = botstuff
 
 GUILD_LOG_PATH = "/home/bot-vm/code/guildpilot/modules/statwrangler/json/guilds.json"
+
 
 @bot.event
 async def on_guild_join(guild):
@@ -30,10 +33,7 @@ async def on_guild_join(guild):
 
     # Append new guild info if not already tracked
     if not any(str(g["id"]) == str(guild.id) for g in data["servers"]):
-        data["servers"].append({
-            "id": str(guild.id),
-            "name": guild.name
-        })
+        data["servers"].append({"id": str(guild.id), "name": guild.name})
 
         with open(GUILD_LOG_PATH, "w") as f:
             json.dump(data, f, indent=4)
@@ -74,7 +74,9 @@ async def on_ready_bot():
             if str(guild.id) not in existing_ids:
                 data["servers"].append({"id": str(guild.id), "name": guild.name})
                 updated = True
-                print(f"📌 Added missing server from startup: {guild.name} ({guild.id})")
+                print(
+                    f"📌 Added missing server from startup: {guild.name} ({guild.id})"
+                )
 
         if updated:
             with open(GUILD_LOG_PATH, "w", encoding="utf-8") as f:
@@ -84,13 +86,17 @@ async def on_ready_bot():
             print("\n" + "=" * 60)
             print(f"[READY] Logged in as: {bot.user} (id={bot.user.id})")
             print(f"[READY] py-cord discord module: {discord.__file__}")
-            print(f"[READY] discord version: {getattr(discord, '__version__', 'unknown')}")
+            print(
+                f"[READY] discord version: {getattr(discord, '__version__', 'unknown')}"
+            )
             print(f"[READY] Latency: {round(bot.latency * 1000)} ms")
 
             # Guilds the bot is currently connected to
             print(f"[READY] Connected guilds: {len(bot.guilds)}")
             for g in bot.guilds:
-                print(f"  - {g.name} (id={g.id}) | members≈{getattr(g, 'member_count', 'unknown')}")
+                print(
+                    f"  - {g.name} (id={g.id}) | members≈{getattr(g, 'member_count', 'unknown')}"
+                )
 
             # Application / slash commands loaded locally
             cmds = getattr(bot, "application_commands", [])

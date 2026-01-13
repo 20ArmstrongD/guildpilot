@@ -5,6 +5,8 @@ from .env_check import get_env_vars
 import os
 import asyncio
 from datetime import datetime, timedelta, timezone
+
+
 def main() -> None:
     try:
         get_env_vars()
@@ -16,13 +18,12 @@ def main() -> None:
     # Choose your model centrally (env override supported)
     MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-
     # Intents
     intents = discord.Intents.default()
     intents.messages = True
     intents.message_content = True
 
-    bot = commands.Bot(command_prefix='/', intents=intents)
+    bot = commands.Bot(command_prefix="/", intents=intents)
 
     # ================= Conversation memory with TTL =================
     SYSTEM_PROMPT = (
@@ -30,9 +31,9 @@ def main() -> None:
         "Be concise, clear, and friendly. Use markdown when helpful."
     )
 
-    MAX_TURNS = 12                          # keep last ~12 user/assistant turns
-    CONVO_TTL = timedelta(hours=2)          # flush after 2 hours of inactivity
-    CLEANUP_PERIOD = 300                    # seconds (5 min)
+    MAX_TURNS = 12  # keep last ~12 user/assistant turns
+    CONVO_TTL = timedelta(hours=2)  # flush after 2 hours of inactivity
+    CLEANUP_PERIOD = 300  # seconds (5 min)
 
     # convos[root_id] = {"history": [...], "last_active": datetime, "channel_id": int}
     convos = {}
@@ -45,7 +46,7 @@ def main() -> None:
     def trim_history(history, max_turns=MAX_TURNS):
         """Keep system + last N user/assistant turns."""
         sys = [m for m in history if m["role"] == "system"][:1]
-        rest = [m for m in history if m["role"] != "system"][-2*max_turns:]
+        rest = [m for m in history if m["role"] != "system"][-2 * max_turns :]
         return sys + rest
 
     def is_expired(root_id):
@@ -72,7 +73,9 @@ def main() -> None:
                 for root_id in to_delete:
                     del convos[root_id]
                     # remove any msg_to_root entries that map to this root
-                    for mid in [k for k, v in list(msg_to_root.items()) if v == root_id]:
+                    for mid in [
+                        k for k, v in list(msg_to_root.items()) if v == root_id
+                    ]:
                         del msg_to_root[mid]
             except Exception as e:
                 print(f"[cleanup] error: {e}")
@@ -82,7 +85,7 @@ def main() -> None:
     async def send_long_message(channel, content):
         # Discord hard limit ~2000 chars
         for i in range(0, len(content), 2000):
-            await channel.send(content[i:i + 2000])
+            await channel.send(content[i : i + 2000])
 
     # ---- LLM helper using modern client ----
     def llm_reply(history):
@@ -96,12 +99,15 @@ def main() -> None:
             temperature=0.9,
             max_tokens=1024,
         )
-        return resp.choices[0].message.content if resp.choices else "No response from OpenAI."
+        return (
+            resp.choices[0].message.content
+            if resp.choices
+            else "No response from OpenAI."
+        )
 
     # ================== Slash command: start a new conversation ==================
     @bot.slash_command(
-        name="ask-the-pilot",
-        description="Talk to the pilot, he can probably help"
+        name="ask-the-pilot", description="Talk to the pilot, he can probably help"
     )
     async def askPilot(ctx, message: str):
         # Start "thinking..."
@@ -120,7 +126,9 @@ def main() -> None:
 
             user_name = ctx.author.display_name
             server_location = ctx.guild.name if ctx.guild else "DM"
-            channel_location = ctx.channel.name if hasattr(ctx.channel, "name") else "DM"
+            channel_location = (
+                ctx.channel.name if hasattr(ctx.channel, "name") else "DM"
+            )
 
             # ✅ End thinking — only user sees this
             try:
@@ -155,7 +163,9 @@ def main() -> None:
             print(f"Error: {e!r}")
             # ✅ Also stop thinking on error (ephemeral)
             try:
-                await ctx.respond("There was an error processing your request.", ephemeral=True)
+                await ctx.respond(
+                    "There was an error processing your request.", ephemeral=True
+                )
             except Exception:
                 pass
 
@@ -167,11 +177,15 @@ def main() -> None:
             return
 
         # If user replies to a bot message, continue that conversation (if not expired)
-        if message.reference and (message.reference.resolved or message.reference.message_id):
+        if message.reference and (
+            message.reference.resolved or message.reference.message_id
+        ):
             try:
                 ref = message.reference.resolved
                 if not ref:
-                    ref = await message.channel.fetch_message(message.reference.message_id)
+                    ref = await message.channel.fetch_message(
+                        message.reference.message_id
+                    )
             except Exception:
                 ref = None
 
@@ -190,7 +204,9 @@ def main() -> None:
                 else:
                     # Continue existing history
                     meta = convos[root_id]
-                    history = meta["history"] + [{"role": "user", "content": message.content}]
+                    history = meta["history"] + [
+                        {"role": "user", "content": message.content}
+                    ]
 
                 try:
                     reply = llm_reply(history)
@@ -241,13 +257,17 @@ def main() -> None:
             print("\n" + "=" * 60)
             print(f"[READY] Logged in as: {bot.user} (id={bot.user.id})")
             print(f"[READY] py-cord discord module: {discord.__file__}")
-            print(f"[READY] discord version: {getattr(discord, '__version__', 'unknown')}")
+            print(
+                f"[READY] discord version: {getattr(discord, '__version__', 'unknown')}"
+            )
             print(f"[READY] Latency: {round(bot.latency * 1000)} ms")
 
             # Guilds the bot is currently connected to
             print(f"[READY] Connected guilds: {len(bot.guilds)}")
             for g in bot.guilds:
-                print(f"  - {g.name} (id={g.id}) | members≈{getattr(g, 'member_count', 'unknown')}")
+                print(
+                    f"  - {g.name} (id={g.id}) | members≈{getattr(g, 'member_count', 'unknown')}"
+                )
 
             # Application / slash commands loaded locally
             cmds = getattr(bot, "application_commands", [])
@@ -265,12 +285,13 @@ def main() -> None:
 
     async def main():
         async with bot:
-            await bot.start(os.getenv('DISCORD_TOKEN'))
+            await bot.start(os.getenv("DISCORD_TOKEN"))
 
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Bot shutting down.")
+
 
 if __name__ == "__main__":
     main()
