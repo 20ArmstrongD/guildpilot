@@ -1,12 +1,15 @@
 import os
 import time
+
 import requests
 from dotenv import load_dotenv
 
 _TOKEN_CACHE = {"token": None, "exp": 0}
 
+
 def _now() -> float:
     return time.time()
+
 
 def get_twitch_oauth_token() -> str | None:
     """
@@ -29,7 +32,7 @@ def get_twitch_oauth_token() -> str | None:
     data = {
         "client_id": client_id,
         "client_secret": client_secret,
-        "grant_type": "client_credentials"
+        "grant_type": "client_credentials",
     }
     try:
         resp = requests.post(url, data=data, timeout=20)
@@ -46,9 +49,11 @@ def get_twitch_oauth_token() -> str | None:
 
     return None
 
+
 def twitch_headers() -> dict | None:
     """Return Helix headers with Client-ID and Bearer token, or None if unavailable."""
     from dotenv import load_dotenv
+
     load_dotenv()
     client_id = os.getenv("TWITCH_CLIENT_ID")
     token = get_twitch_oauth_token()

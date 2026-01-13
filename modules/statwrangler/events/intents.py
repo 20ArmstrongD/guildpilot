@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 
-
 intent = discord.Intents.default()
 intent.message_content = True
 intent.members = True

@@ -3,10 +3,7 @@ from discord.ext import commands
 import logging
 from .elements import (
     EMOJI_APPROVE,
-    EMOJI_DENY,
-    GUILD_ID,
-    bot,
-    log_request_promote_demote
+    EMOJI_DENY
 )
 
 
@@ -15,7 +12,6 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True  
 
-bot = bot
 
 # Function to demote a member
 async def demote_member(interaction, member, role):
@@ -23,10 +19,10 @@ async def demote_member(interaction, member, role):
         await member.remove_roles(role)
         await interaction.followup.send(f"{member.display_name} has been demoted from {role.name}.", ephemeral=True)
             # Log the demotion request
-        log_request_promote_demote(interaction.user.display_name, f"Demoted {member.display_name} from {role.name}", True, interaction.user.display_name)
+        logging.INFO(interaction.user.display_name, f"Demoted {member.display_name} from {role.name}", True, interaction.user.display_name)
         
         # Log the demotion request
-        log_request_promote_demote(interaction.user.display_name, f"Demoted {member.display_name} from {role.name}", True, interaction.user.display_name)
+        logging.INFO(interaction.user.display_name, f"Demoted {member.display_name} from {role.name}", True, interaction.user.display_name)
 
     except discord.Forbidden:
         await interaction.followup.send(f"Insufficient permissions to demote {member.display_name}.", ephemeral=True)
@@ -39,7 +35,8 @@ async def demote_member(interaction, member, role):
         logging.error(f"HTTP Exception while demoting {member.display_name} from {role.name}: {e}")
 
 
-def register_demote_command(bot):
+def register_demote_command(bot: commands.Bot) -> None:
+    get_config()
     # Slash command: Demote a member
     @bot.tree.command(guild=discord.Object(id=GUILD_ID), name="demote", description="Request to demote a <member> from <role>")
     async def demote(interaction: discord.Interaction, member: discord.Member, role: discord.Role):
@@ -50,7 +47,7 @@ def register_demote_command(bot):
         if admin_role in interaction.user.roles:
             await demote_member(interaction, member, role)
             logging.info(f'{interaction.user.display_name} aka: Admin just demoted {member.display_name} from {role.name}.')
-            log_request_promote_demote(interaction.user.display_name, f"just demoted {member.display_name} from {role.name}", True, interaction.user.display_name)
+            logging.INFO(interaction.user.display_name, f"just demoted {member.display_name} from {role.name}", True, interaction.user.display_name)
         else:
             # Notify admins for approval
             admins = [admin for admin in interaction.guild.members if admin_role in admin.roles]
@@ -75,11 +72,11 @@ def register_demote_command(bot):
                         if str(reaction.emoji) == EMOJI_APPROVE:
                             await demote_member(interaction, member, role)
                             logging.info(f'{user.display_name} approved demotion of {member.display_name} from {role.name}.')
-                            log_request_promote_demote(user.display_name, f"Approved demotion of {member.display_name} from {role.name}", True, user.display_name)
+                            logging.INFO(user.display_name, f"Approved demotion of {member.display_name} from {role.name}", True, user.display_name)
                         else:
                             await interaction.followup.send(f"Demotion of {member.display_name} from {role.name} has been denied.", ephemeral=True)
                             logging.info(f'{user.display_name} denied demotion of {member.display_name} from {role.name}.')
-                            log_request_promote_demote(user.display_name, f"Denied demotion of {member.display_name} from {role.name}", False, user.display_name)
+                            logging.INFO(user.display_name, f"Denied demotion of {member.display_name} from {role.name}", False, user.display_name)
                     except Exception as e:
                         logging.error(f"Error sending approval message: {e}")
                         await interaction.followup.send("There was an error processing the approval request.", ephemeral=True)

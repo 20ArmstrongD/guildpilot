@@ -1,5 +1,9 @@
 import logging
-from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
+
+from playwright.async_api import (
+    TimeoutError as PlaywrightTimeoutError,
+    async_playwright,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -9,6 +13,7 @@ logging.basicConfig(
 
 # Toggle this to True if you want to SEE the browser (helps diagnose bot protection)
 DEBUG_HEADFUL = False
+
 
 async def get_r6siege_player_data(username: str, platform: str):
     url = f"https://r6.tracker.network/r6siege/profile/{platform}/{username}/overview"
@@ -31,9 +36,10 @@ async def get_r6siege_player_data(username: str, platform: str):
             await page.goto(url, wait_until="domcontentloaded", timeout=60_000)
             logging.info(f"[siege] title={await page.title()!r}")
 
-
             # Always print what we actually loaded (helps a TON)
-            logging.info(f"[siege] Loaded page title={await page.title()!r} url={page.url!r}")
+            logging.info(
+                f"[siege] Loaded page title={await page.title()!r} url={page.url!r}"
+            )
 
             # Don't use networkidle here; many modern sites never go idle.
             # Instead wait for "real content" indicators (text anchors).
@@ -44,7 +50,9 @@ async def get_r6siege_player_data(username: str, platform: str):
                 )
             except PlaywrightTimeoutError:
                 html_head = (await page.content())[:2000]
-                logging.error("[siege] Timed out waiting for page UI. Dumping HTML head:")
+                logging.error(
+                    "[siege] Timed out waiting for page UI. Dumping HTML head:"
+                )
                 print("\n--- PLAYWRIGHT DEBUG ---")
                 print("TITLE:", await page.title())
                 print("URL:", page.url)
@@ -73,7 +81,7 @@ async def get_r6siege_player_data(username: str, platform: str):
                 "xpath=//*[@id='app']/div[2]/div[3]/div/main/div[2]/div[2]/div[3]/div[2]/section[1]/div[1]/div[1]/div/div[1]/div/div/span[2]/span"
             ).first
             await level_locator.wait_for(state="visible", timeout=10000)
-            level = (await level_locator. inner_text()).strip()
+            level = (await level_locator.inner_text()).strip()
 
             # commented out since playtime is not loading on the page in question
             # playtime = await page.evaluate(
@@ -118,7 +126,7 @@ async def get_r6siege_player_data(username: str, platform: str):
             logging.info(
                 f"[siege] Extracted kd={kd!r} level={level!r} rank={rank!r} ranked_kd={ranked_kd!r}, ranked_img={rank_img}"
             )
-            
+
             # use when playtime is a metric to be tracked again
             # logging.info(
             #     f"[siege] Extracted kd={kd!r} level={level!r} playtime={playtime!r} rank={rank!r} ranked_kd={ranked_kd!r}"
@@ -127,8 +135,8 @@ async def get_r6siege_player_data(username: str, platform: str):
             await context.close()
             await browser.close()
             return kd, level, rank, ranked_kd, user_profile_img, rank_img
-            
-            #add back when palytime can be used again
+
+            # add back when palytime can be used again
             # return kd, level, playtime, rank, ranked_kd, user_profile_img, rank_img
 
     except Exception as e:

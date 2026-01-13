@@ -1,6 +1,7 @@
-import logging
 import asyncio
+import logging
 import random
+
 from playwright.async_api import async_playwright
 
 # Logging configuration
@@ -51,14 +52,20 @@ async def get_fortnite_player_data(username: str):
 
                 # NOTE: your original XPaths used /text(), which isn't an element node.
                 # We'll grab the parent element's text and trim.
-                level_xpath_parent = "//*[@id='overview']/div[2]/div/div[1]/header/div/div[2]"
+                level_xpath_parent = (
+                    "//*[@id='overview']/div[2]/div/div[1]/header/div/div[2]"
+                )
                 level_el = await page.query_selector(f"xpath={level_xpath_parent}")
                 if level_el:
                     level_text = (await level_el.inner_text()).strip()
                     level = level_text or "N/A"
 
-                playtime_xpath_parent = "//*[@id='overview']/div[2]/div/div[1]/header/div/div[1]"
-                playtime_el = await page.query_selector(f"xpath={playtime_xpath_parent}")
+                playtime_xpath_parent = (
+                    "//*[@id='overview']/div[2]/div/div[1]/header/div/div[1]"
+                )
+                playtime_el = await page.query_selector(
+                    f"xpath={playtime_xpath_parent}"
+                )
                 if playtime_el:
                     playtime_text = (await playtime_el.inner_text()).strip()
                     playtime = playtime_text or "N/A"

@@ -1,19 +1,20 @@
+import inspect
+import logging
+
 import discord
 import validators
-import logging
-import inspect
 
 from .events import (
-    get_env_vars,
     botstuff,
-    intent,
-    on_Ready,
-    get_r6siege_player_data,
-    get_val_player_data,  # (not used below, but leaving since it's in your events)
+    # get_val_player_data,  # (not used below, but leaving since it's in your events)
     generate_link,
-    save_usernames,
-    load_usernames,
     generate_val_link,
+    get_env_vars,
+    get_r6siege_player_data,
+    intent,
+    load_usernames,
+    on_ready_bot,
+    save_usernames,
 )
 
 logging.basicConfig(
@@ -27,7 +28,7 @@ try:
     config = get_env_vars()
 except RuntimeError as e:
     print("line 30")
-    raise SystemExit(str(e))
+    raise SystemExit(str(e)) from e
 
 
 # Init bot intents
@@ -43,7 +44,7 @@ def validate_url(url: str | None):
 
 @bot.event
 async def on_ready():
-    await on_Ready()
+    await on_ready_bot()
 
 
 @bot.event
@@ -82,27 +83,21 @@ async def username_autocomplete(ctx: discord.AutocompleteContext):
 
 
 # ---------------- Slash command (py-cord) ----------------
-@bot.slash_command(
-    name="game_stats", 
-    description="Fetch game stats for a player"
-)
+@bot.slash_command(name="game_stats", description="Fetch game stats for a player")
 @discord.option(
-    "game",
-    description="Choose a game",
-    choices=["siege", "fortnite", "valorant"]
+    "game", description="Choose a game", choices=["siege", "fortnite", "valorant"]
 )
 @discord.option(
     "username",
     description="Enter the player's name",
-    autocomplete=username_autocomplete
+    autocomplete=username_autocomplete,
 )
 @discord.option(
     "platform",
     description="Platform (PC, Xbox, PlayStation) — only required for Siege",
     required=False,
-    default=None
+    default=None,
 )
-
 async def pull_stats(ctx, game: str, username: str, platform: str = None):
     # Prevent Discord interaction timeout
     try:
@@ -160,11 +155,16 @@ async def pull_stats(ctx, game: str, username: str, platform: str = None):
     if num_args == 2:
         logging.info(f"Fetching {game} stats for {username} on {platform}...")
 
-        kd, level, rank, ranked_kd, user_profile_img, rank_img = await get_r6siege_player_data(
-            username, platform
-        )
+        (
+            kd,
+            level,
+            rank,
+            ranked_kd,
+            user_profile_img,
+            rank_img,
+        ) = await get_r6siege_player_data(username, platform)
 
-        # add when palytime is a tackable metric again 
+        # add when palytime is a tackable metric again
         # kd, level, playtime, rank, ranked_kd, user_profile_img, rank_img = await get_r6siege_player_data(
         #     username, platform
         # )
@@ -181,13 +181,13 @@ async def pull_stats(ctx, game: str, username: str, platform: str = None):
             title=f"Stats for {username} on {game.capitalize()}",
             color=discord.Color.yellow(),
         )
-        
+
         embed.add_field(
             name="Overall Stats",
             value=f"* Level: {level}\n* KD Ratio: {kd}\n",
             inline=False,
         )
-        
+
         # add back when playtime can be tracked
         # embed.add_field(
         #     name="Overall Stats",
@@ -221,7 +221,9 @@ async def pull_stats(ctx, game: str, username: str, platform: str = None):
                 await ctx.respond("Failed to generate the Fortnite link.")
                 return
 
-            embed = discord.Embed(title=f"Fortnite Stats for {username}", color=discord.Color.purple())
+            embed = discord.Embed(
+                title=f"Fortnite Stats for {username}", color=discord.Color.purple()
+            )
             embed.add_field(name="Link", value=url, inline=False)
             await ctx.respond(embed=embed)
             return
@@ -232,7 +234,9 @@ async def pull_stats(ctx, game: str, username: str, platform: str = None):
                 await ctx.respond("Failed to generate the Valorant link.")
                 return
 
-            embed = discord.Embed(title=f"Valorant Stats for {username}", color=discord.Color.red())
+            embed = discord.Embed(
+                title=f"Valorant Stats for {username}", color=discord.Color.red()
+            )
             embed.add_field(name="Link", value=url, inline=False)
             await ctx.respond(embed=embed)
             return

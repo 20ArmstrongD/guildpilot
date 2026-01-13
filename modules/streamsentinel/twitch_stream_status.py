@@ -1,12 +1,13 @@
 import datetime as _dt
-from typing import Any, Dict, List, Optional
+
 import requests
 
 from .twitch_auth import twitch_headers
 
 TWITCH_HELIX = "https://api.twitch.tv/helix"
 
-def _get(url: str, params: dict | None = None) -> Optional[dict]:
+
+def _get(url: str, params: dict | None = None) -> dict | None:
     headers = twitch_headers()
     if not headers:
         return None
@@ -18,9 +19,11 @@ def _get(url: str, params: dict | None = None) -> Optional[dict]:
         print(f"[twitch_stream_status] GET failed: {e}")
         return None
 
+
 # ---------------- Users / Streams / Games ----------------
 
-def get_users(logins: List[str]) -> list[dict]:
+
+def get_users(logins: list[str]) -> list[dict]:
     if not logins:
         return []
     params = []
@@ -30,7 +33,8 @@ def get_users(logins: List[str]) -> list[dict]:
     j = _get(f"{TWITCH_HELIX}/users", params=params)  # type: ignore
     return j.get("data", []) if j else []
 
-def get_streams(logins: List[str]) -> list[dict]:
+
+def get_streams(logins: list[str]) -> list[dict]:
     if not logins:
         return []
     params = []
@@ -39,7 +43,8 @@ def get_streams(logins: List[str]) -> list[dict]:
     j = _get(f"{TWITCH_HELIX}/streams", params=params)  # type: ignore
     return j.get("data", []) if j else []
 
-def get_games_by_ids(ids: List[str]) -> dict[str, dict]:
+
+def get_games_by_ids(ids: list[str]) -> dict[str, dict]:
     if not ids:
         return {}
     params = []
@@ -49,7 +54,9 @@ def get_games_by_ids(ids: List[str]) -> dict[str, dict]:
     games = j.get("data", []) if j else []
     return {g.get("id"): g for g in games}
 
+
 # ---------------- Search (for display name resolution) ----------------
+
 
 def search_channels(query: str) -> list[dict]:
     if not query:
@@ -57,7 +64,8 @@ def search_channels(query: str) -> list[dict]:
     j = _get(f"{TWITCH_HELIX}/search/channels", params={"query": query})
     return j.get("data", []) if j else []
 
-def resolve_to_logins(identifiers: List[str]) -> dict[str, str]:
+
+def resolve_to_logins(identifiers: list[str]) -> dict[str, str]:
     """
     Accepts Twitch identifiers that may be *display names* or *logins* and
     resolves them to *logins*.
@@ -97,7 +105,7 @@ def resolve_to_logins(identifiers: List[str]) -> dict[str, str]:
                 break
 
         chosen = exact or results[0]
-        login = (chosen.get("broadcaster_login") or chosen.get("display_name") or lowered)
+        login = chosen.get("broadcaster_login") or chosen.get("display_name") or lowered
         out[raw] = str(login).lower()
 
     # Deduplicate values while keeping the first mapping for each login
@@ -110,11 +118,14 @@ def resolve_to_logins(identifiers: List[str]) -> dict[str, str]:
         deduped[k] = v
     return deduped
 
+
 # ---------------- Formatting helpers ----------------
+
 
 def formatted_time(ts_iso: str, tzinfo) -> str:
     dt = _dt.datetime.fromisoformat(ts_iso.replace("Z", "+00:00")).astimezone(tzinfo)
     return dt.strftime("%-I:%M %p %Z")
+
 
 def duration_hm(start: _dt.datetime, end: _dt.datetime) -> str:
     delta = end - start
@@ -124,9 +135,11 @@ def duration_hm(start: _dt.datetime, end: _dt.datetime) -> str:
         return f"{hours}h {mins}m"
     return f"{mins}m"
 
+
 # ---------------- Build stream cards ----------------
 
-def build_stream_cards(logins: List[str], tzinfo) -> dict[str, dict]:
+
+def build_stream_cards(logins: list[str], tzinfo) -> dict[str, dict]:
     live = get_streams(logins)
     if not live:
         return {}
@@ -158,7 +171,13 @@ def build_stream_cards(logins: List[str], tzinfo) -> dict[str, dict]:
             "game_id": game_id,
             "box_art_url": box_art_url,
             "started_at_iso": started_at,
-            "started_at_local_str": formatted_time(started_at, tzinfo) if started_at else "Unknown",
-            "started_at_dt": _dt.datetime.fromisoformat(started_at.replace("Z", "+00:00")) if started_at else None,
+            "started_at_local_str": formatted_time(started_at, tzinfo)
+            if started_at
+            else "Unknown",
+            "started_at_dt": _dt.datetime.fromisoformat(
+                started_at.replace("Z", "+00:00")
+            )
+            if started_at
+            else None,
         }
     return out

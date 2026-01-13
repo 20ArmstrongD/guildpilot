@@ -3,11 +3,12 @@ openai==2.15.0
 python-dotenv==1.0.1
 
 # Only if you actually use them:
-aiohttp==3.11.11
-requests==2.32.3
+aiohttp>=3.13.3
+requests>=2.32.4
 playwright==1.57.0
 selenium==4.27.1
 webdriver-manager==4.0.2
 ffmpeg-python==0.2.0
 numpy==2.2.1
 validators==0.35.0
+pytest==9.0.2

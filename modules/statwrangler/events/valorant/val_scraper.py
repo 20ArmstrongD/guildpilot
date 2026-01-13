@@ -1,6 +1,8 @@
 import logging
-import asyncio
+
+# import asyncio
 import re
+
 from playwright.async_api import async_playwright
 
 # Logging configuration
@@ -57,7 +59,9 @@ async def get_val_player_data(username: str):
 
             # -------- Extract User Profile Image --------
             user_img_el = await page.query_selector(".user-avatar__image")
-            user_profile_img = await user_img_el.get_attribute("src") if user_img_el else None
+            user_profile_img = (
+                await user_img_el.get_attribute("src") if user_img_el else None
+            )
 
             # -------- Try ranked data --------
             try:
@@ -73,21 +77,28 @@ async def get_val_player_data(username: str):
                     "div[1] div[1] div[3] div[2] div div[2] span[2] span"
                 )
                 ranked_kd_el = await page.query_selector(ranked_kd_selector)
-                ranked_kd = (await ranked_kd_el.inner_text()).strip() if ranked_kd_el else None
+                ranked_kd = (
+                    (await ranked_kd_el.inner_text()).strip() if ranked_kd_el else None
+                )
 
                 rank_img_selector = (
                     "#app div[2] div[3] div main div[3] div[2] div[2] div[2] "
                     "div[1] div[1] div[2] div[2] div div[1] img"
                 )
                 rank_img_el = await page.query_selector(rank_img_selector)
-                rank_img = await rank_img_el.get_attribute("src") if rank_img_el else None
+                rank_img = (
+                    await rank_img_el.get_attribute("src") if rank_img_el else None
+                )
 
             except Exception:
                 logging.warning("Unable to retrieve ranked data")
 
             # Log extracted data
             elements = {"KD": kd, "Level": level, "Rank": rank, "Ranked KD": ranked_kd}
-            img_elements = {"Player Profile Pic": user_profile_img, "Ranked Image": rank_img}
+            img_elements = {
+                "Player Profile Pic": user_profile_img,
+                "Ranked Image": rank_img,
+            }
 
             logging.info(f"{riot_name} Valorant Data Successfully Found!")
             for key, value in elements.items():
