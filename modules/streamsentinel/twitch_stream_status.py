@@ -1,5 +1,5 @@
 import datetime as _dt
-from typing import List, Optional
+
 import requests
 
 from .twitch_auth import twitch_headers
@@ -7,7 +7,7 @@ from .twitch_auth import twitch_headers
 TWITCH_HELIX = "https://api.twitch.tv/helix"
 
 
-def _get(url: str, params: dict | None = None) -> Optional[dict]:
+def _get(url: str, params: dict | None = None) -> dict | None:
     headers = twitch_headers()
     if not headers:
         return None
@@ -23,7 +23,7 @@ def _get(url: str, params: dict | None = None) -> Optional[dict]:
 # ---------------- Users / Streams / Games ----------------
 
 
-def get_users(logins: List[str]) -> list[dict]:
+def get_users(logins: list[str]) -> list[dict]:
     if not logins:
         return []
     params = []
@@ -34,7 +34,7 @@ def get_users(logins: List[str]) -> list[dict]:
     return j.get("data", []) if j else []
 
 
-def get_streams(logins: List[str]) -> list[dict]:
+def get_streams(logins: list[str]) -> list[dict]:
     if not logins:
         return []
     params = []
@@ -44,7 +44,7 @@ def get_streams(logins: List[str]) -> list[dict]:
     return j.get("data", []) if j else []
 
 
-def get_games_by_ids(ids: List[str]) -> dict[str, dict]:
+def get_games_by_ids(ids: list[str]) -> dict[str, dict]:
     if not ids:
         return {}
     params = []
@@ -65,7 +65,7 @@ def search_channels(query: str) -> list[dict]:
     return j.get("data", []) if j else []
 
 
-def resolve_to_logins(identifiers: List[str]) -> dict[str, str]:
+def resolve_to_logins(identifiers: list[str]) -> dict[str, str]:
     """
     Accepts Twitch identifiers that may be *display names* or *logins* and
     resolves them to *logins*.
@@ -139,7 +139,7 @@ def duration_hm(start: _dt.datetime, end: _dt.datetime) -> str:
 # ---------------- Build stream cards ----------------
 
 
-def build_stream_cards(logins: List[str], tzinfo) -> dict[str, dict]:
+def build_stream_cards(logins: list[str], tzinfo) -> dict[str, dict]:
     live = get_streams(logins)
     if not live:
         return {}

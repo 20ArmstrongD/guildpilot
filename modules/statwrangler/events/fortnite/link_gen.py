@@ -1,6 +1,5 @@
 import logging
 
-
 # def get_image_url():
 #     with open('/home/DiscordPi/code/discord_bots/r6-discord-bot/images/fortnite_img.url', "r")as file:
 #         file=file.read().strip()

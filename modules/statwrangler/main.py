@@ -1,19 +1,20 @@
+import inspect
+import logging
+
 import discord
 import validators
-import logging
-import inspect
 
 from .events import (
-    get_env_vars,
     botstuff,
-    intent,
-    on_ready_bot,
-    get_r6siege_player_data,
     # get_val_player_data,  # (not used below, but leaving since it's in your events)
     generate_link,
-    save_usernames,
-    load_usernames,
     generate_val_link,
+    get_env_vars,
+    get_r6siege_player_data,
+    intent,
+    load_usernames,
+    on_ready_bot,
+    save_usernames,
 )
 
 logging.basicConfig(

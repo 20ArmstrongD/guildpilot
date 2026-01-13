@@ -1,0 +1,47 @@
+[tool.ruff]
+# Python version target
+target-version = "py312"
+
+# Line length matches Ruff formatter default
+line-length = 88
+
+# What Ruff should check
+select = [
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "I",   # import sorting
+  "UP",  # pyupgrade
+  "B",   # flake8-bugbear
+]
+
+# Ignore rules that are noisy for async / bots
+ignore = [
+  "E501",  # line length (formatter handles this)
+]
+
+# Exclude common junk
+exclude = [
+  ".git",
+  "__pycache__",
+  ".venv",
+  "venv",
+  "build",
+  "dist",
+]
+
+# Autofix behavior (local only, CI still checks)
+fix = true
+unsafe-fixes = false
+
+
+[tool.ruff.format]
+# Ruff formatter settings (Black-compatible)
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+
+[tool.ruff.isort]
+combine-as-imports = true
+force-single-line = false

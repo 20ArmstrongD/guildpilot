@@ -1,7 +1,8 @@
 import logging
+
 from playwright.async_api import (
-    async_playwright,
     TimeoutError as PlaywrightTimeoutError,
+    async_playwright,
 )
 
 logging.basicConfig(

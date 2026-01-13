@@ -1,10 +1,12 @@
-import discord
-from openai import OpenAI
-from discord.ext import commands
-from .env_check import get_env_vars
-import os
 import asyncio
-from datetime import datetime, timedelta, timezone
+import os
+from datetime import UTC, datetime, timedelta
+
+import discord
+from discord.ext import commands
+from openai import OpenAI
+
+from .env_check import get_env_vars
 
 
 def main() -> None:
@@ -41,7 +43,7 @@ def main() -> None:
     msg_to_root = {}
 
     def utcnow():
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
 
     def trim_history(history, max_turns=MAX_TURNS):
         """Keep system + last N user/assistant turns."""

@@ -1,11 +1,12 @@
-import discord
+# import requests
+import json
 
 # from discord.ext import commands
 import os
 
-# import requests
-import json
-from .intents import intent, botstuff
+import discord
+
+from .intents import botstuff, intent
 
 # Set up bot with command prefix and intents (using discord.Bot)
 intents = intent
@@ -28,7 +29,7 @@ async def on_guild_join(guild):
             json.dump({"servers": []}, f)
 
     # Load existing data
-    with open(GUILD_LOG_PATH, "r") as f:
+    with open(GUILD_LOG_PATH) as f:
         data = json.load(f)
 
     # Append new guild info if not already tracked
@@ -58,7 +59,7 @@ async def on_ready_bot():
             with open(GUILD_LOG_PATH, "w") as f:
                 json.dump({"servers": []}, f, indent=4)
 
-        with open(GUILD_LOG_PATH, "r", encoding="utf-8") as f:
+        with open(GUILD_LOG_PATH, encoding="utf-8") as f:
             try:
                 data = json.load(f)
             except json.JSONDecodeError:

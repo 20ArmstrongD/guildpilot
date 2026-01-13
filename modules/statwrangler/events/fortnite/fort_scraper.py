@@ -1,6 +1,7 @@
-import logging
 import asyncio
+import logging
 import random
+
 from playwright.async_api import async_playwright
 
 # Logging configuration

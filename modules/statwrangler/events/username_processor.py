@@ -5,7 +5,7 @@ file_path = "/home/bot-vm/code/guildpilot/modules/statwrangler/json/usernames.js
 
 def load_usernames():
     try:
-        with open(file_path, "r") as file:
+        with open(file_path) as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}

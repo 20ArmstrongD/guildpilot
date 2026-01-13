@@ -2,6 +2,7 @@ import logging
 
 # import asyncio
 import re
+
 from playwright.async_api import async_playwright
 
 # Logging configuration
