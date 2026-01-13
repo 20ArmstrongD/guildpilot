@@ -28,7 +28,7 @@ try:
     config = get_env_vars()
 except RuntimeError as e:
     print("line 30")
-    raise SystemExit(str(e)) from error
+    raise SystemExit(str(e)) from e
 
 
 # Init bot intents

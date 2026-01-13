@@ -13,7 +13,7 @@ def main() -> None:
     try:
         get_env_vars()
     except RuntimeError as e:
-        raise SystemExit(str(e)) from error
+        raise SystemExit(str(e)) from e
 
     client = OpenAI()  # reads OPENAI_API_KEY automatically
 

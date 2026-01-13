@@ -11,7 +11,7 @@ from .twitch_stream_status import build_stream_cards, duration_hm, resolve_to_lo
 try:
     config = get_env_vars()
 except RuntimeError as e:
-    raise SystemExit(str(e)) from error
+    raise SystemExit(str(e)) from e
 
 intents = discord.Intents.default()
 intents.message_content = False  # not needed for this bot
