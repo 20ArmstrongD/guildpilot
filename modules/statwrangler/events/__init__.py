@@ -1,4 +1,4 @@
-from .bot_init import on_ready_bot
+from .bot_init import on_ready_bot as on_ready_bot
 from .intents import botstuff, intent
 from .env_check import get_env_vars as get_env_vars
 #from .key_hole import DISCORD_BOT_TOKEN

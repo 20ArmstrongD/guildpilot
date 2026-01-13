@@ -9,7 +9,7 @@ from .events import (
     intent,
     on_ready_bot,
     get_r6siege_player_data,
-    get_val_player_data,  # (not used below, but leaving since it's in your events)
+    # get_val_player_data,  # (not used below, but leaving since it's in your events)
     generate_link,
     save_usernames,
     load_usernames,
