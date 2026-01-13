@@ -1,4 +1,5 @@
 import logging
+
 import discord
 
 from modules.statwrangler.events.env_check import get_env_vars

@@ -156,7 +156,9 @@ def setup(bot: commands.Bot):
     - env vars should be loaded ONCE in modules/bot/main.py
     - we import get_env_vars here only to build config at setup-time
     """
-    from .env_check import get_env_vars  # local import avoids side effects at import time
+    from .env_check import (
+        get_env_vars,  # local import avoids side effects at import time
+    )
 
     config = get_env_vars()
     bot.add_cog(StreamSentinel(bot, config))

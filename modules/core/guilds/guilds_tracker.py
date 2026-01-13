@@ -1,11 +1,11 @@
 import asyncio
 import json
-import os
-from datetime import UTC, datetime
 from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+
 import discord
 from discord.ext import commands
-from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]  # guild_tracker.py -> guilds -> core -> modules -> PROJECT
 GUILD_LOG_PATH = PROJECT_ROOT / "modules" / "core" / "guilds" / "guilds.json"

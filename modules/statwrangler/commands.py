@@ -2,8 +2,8 @@ import inspect
 import logging
 
 import discord
-from discord.ext import commands
 import validators
+from discord.ext import commands
 
 from .events import (
     generate_link,
