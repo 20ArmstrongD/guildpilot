@@ -13,7 +13,7 @@ __pycache__/*
 
 
 # code folders
-rolecop/
+
 # Runtime / bot state
 modules/core/guilds/guilds.json
 modules/statwrangler/json/guilds.json

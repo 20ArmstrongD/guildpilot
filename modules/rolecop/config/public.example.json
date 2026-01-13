@@ -1,0 +1,9 @@
+{
+  "safe_mode_default": true,
+  "defaults": {
+    "approvals_channel_name": "admin-approval",
+    "approver_role_names": ["Admin"],
+    "dm_approvers_first": false
+  }
+}
+
