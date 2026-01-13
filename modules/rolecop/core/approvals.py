@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Callable, Awaitable
 
 import discord
 
@@ -46,9 +46,13 @@ class ApprovalView(discord.ui.View):
         return False
 
     @discord.ui.button(label="Approve", style=discord.ButtonStyle.success)
-    async def approve_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def approve_btn(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         await self._on_approve(interaction)
 
     @discord.ui.button(label="Deny", style=discord.ButtonStyle.danger)
-    async def deny_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def deny_btn(
+        self, button: discord.ui.Button, interaction: discord.Interaction
+    ):
         await self._on_deny(interaction)

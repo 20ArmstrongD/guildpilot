@@ -8,10 +8,16 @@ from discord import Option
 from discord.ext import commands
 
 from .core.approvals import ApprovalRequest, ApprovalView
-from .core.config_loader import load_runtime_config, load_guild_settings, save_guild_settings
+from .core.config_loader import (
+    load_guild_settings,
+    load_runtime_config,
+    save_guild_settings,
+)
 from .core.permissions import is_approver
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]  # .../modules/rolecop/cog.py -> modules
+PROJECT_ROOT = (
+    Path(__file__).resolve().parents[2]
+)  # .../modules/rolecop/cog.py -> modules
 ROLECOP_DIR = PROJECT_ROOT / "rolecop"
 
 MEMB_MSG_PATH = ROLECOP_DIR / "messages" / "welc_msg_membs.json"
@@ -42,16 +48,24 @@ class RoleCopCog(commands.Cog):
 
     # ---------------- Config helpers ----------------
     def _is_personal(self, guild: discord.Guild | None) -> bool:
-        return bool(guild and self.cfg.personal_guild_id and guild.id == self.cfg.personal_guild_id)
+        return bool(
+            guild
+            and self.cfg.personal_guild_id
+            and guild.id == self.cfg.personal_guild_id
+        )
 
     def _get_guild_cfg(self, guild: discord.Guild) -> dict:
         """Resolve effective config for a guild (personal merged + per-guild overrides)."""
         overrides = self.guild_settings.get(str(guild.id), {})
 
-        approvals_channel_name = overrides.get("approvals_channel_name", self.cfg.approvals_channel_name)
+        approvals_channel_name = overrides.get(
+            "approvals_channel_name", self.cfg.approvals_channel_name
+        )
         approvals_channel_id = overrides.get("approvals_channel_id")
 
-        approver_role_names = overrides.get("approver_role_names", self.cfg.approver_role_names)
+        approver_role_names = overrides.get(
+            "approver_role_names", self.cfg.approver_role_names
+        )
         safe_mode = overrides.get("safe_mode", self.cfg.safe_mode_default)
 
         promote_role_id = overrides.get("promote_role_id")
@@ -65,13 +79,19 @@ class RoleCopCog(commands.Cog):
             "safe_mode": bool(safe_mode),
             "approvals_channel_name": approvals_channel_name,
             "approvals_channel_id": approvals_channel_id,
-            "approver_role_names": list(approver_role_names) if isinstance(approver_role_names, list) else [],
-            "dm_approvers_first": bool(overrides.get("dm_approvers_first", self.cfg.dm_approvers_first)),
+            "approver_role_names": list(approver_role_names)
+            if isinstance(approver_role_names, list)
+            else [],
+            "dm_approvers_first": bool(
+                overrides.get("dm_approvers_first", self.cfg.dm_approvers_first)
+            ),
             "promote_role_id": promote_role_id,
             "demote_role_id": demote_role_id,
         }
 
-    def _find_text_channel(self, guild: discord.Guild, *, channel_id: int | None, name: str | None) -> discord.TextChannel | None:
+    def _find_text_channel(
+        self, guild: discord.Guild, *, channel_id: int | None, name: str | None
+    ) -> discord.TextChannel | None:
         # Prefer ID (more reliable), fall back to name
         if isinstance(channel_id, int):
             ch = guild.get_channel(channel_id)
@@ -88,21 +108,52 @@ class RoleCopCog(commands.Cog):
         return None
 
     def _is_configured(self, gcfg: dict) -> bool:
-        return isinstance(gcfg.get("promote_role_id"), int) and isinstance(gcfg.get("demote_role_id"), int) and (
-            isinstance(gcfg.get("approvals_channel_id"), int) or bool(gcfg.get("approvals_channel_name"))
+        return (
+            isinstance(gcfg.get("promote_role_id"), int)
+            and isinstance(gcfg.get("demote_role_id"), int)
+            and (
+                isinstance(gcfg.get("approvals_channel_id"), int)
+                or bool(gcfg.get("approvals_channel_name"))
+            )
         )
 
     # ---------------- Setup command (public servers) ----------------
-    @commands.slash_command(name="rolecop_setup", description="Configure RoleCop for this server (admin only).")
+    @commands.slash_command(
+        name="rolecop_setup",
+        description="Configure RoleCop for this server (admin only).",
+    )
     async def rolecop_setup(
         self,
         ctx: discord.ApplicationContext,
-        promote_role: discord.Role = Option(discord.Role, "Role to assign when promoting", required=True),
-        demote_role: discord.Role = Option(discord.Role, "Role to remove when demoting", required=True),
-        approvals_channel: discord.TextChannel = Option(discord.TextChannel, "Channel where approval requests are posted", required=True),
-        approver_role_1: discord.Role = Option(discord.Role, "Primary approver role", required=True),
-        approver_role_2: discord.Role = Option(discord.Role, "Secondary approver role (optional)", required=False, default=None),
-        safe_mode: bool = Option(bool, "Extra guardrails (recommended)", required=False, default=False),
+        promote_role: discord.Role = (
+            Option(discord.Role, "Role to assign when promoting", required=True)
+        ),
+        demote_role: discord.Role = (
+            Option(discord.Role, "Role to remove when demoting", required=True)
+        ),
+        approvals_channel: discord.TextChannel = (
+            Option(
+                discord.TextChannel,
+                "Channel where approval requests are posted",
+                required=True,
+            )
+        ),
+        approver_role_1: discord.Role = (
+            Option(discord.Role, "Primary approver role", required=True)
+        ),
+        approver_role_2: discord.Role = (
+            Option(
+                discord.Role,
+                "Secondary approver role (optional)",
+                required=False,
+                default=None,
+            )
+        ),
+        safe_mode: bool = (
+            Option(
+                bool, "Extra guardrails (recommended)", required=False, default=False
+            )
+        ),
     ):
         if not ctx.guild or not isinstance(ctx.author, discord.Member):
             return await ctx.respond("Run this command in a server.", ephemeral=True)
@@ -111,12 +162,20 @@ class RoleCopCog(commands.Cog):
         me = guild.me
 
         # Only real admins/managers can configure
-        if not (ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_roles):
-            return await ctx.respond("You need Administrator or Manage Roles to run setup.", ephemeral=True)
+        if not (
+            ctx.author.guild_permissions.administrator
+            or ctx.author.guild_permissions.manage_roles
+        ):
+            return await ctx.respond(
+                "You need Administrator or Manage Roles to run setup.", ephemeral=True
+            )
 
         # Bot permission guardrails (setup-time, not later)
         if me is None or not me.guild_permissions.manage_roles:
-            return await ctx.respond("I need the **Manage Roles** permission before I can run RoleCop.", ephemeral=True)
+            return await ctx.respond(
+                "I need the **Manage Roles** permission before I can run RoleCop.",
+                ephemeral=True,
+            )
 
         # Channel guardrail
         ch_perms = approvals_channel.permissions_for(me)
@@ -146,7 +205,10 @@ class RoleCopCog(commands.Cog):
             if msg:
                 return await ctx.respond(msg, ephemeral=True)
             if approver_role_2.id == approver_role_1.id:
-                return await ctx.respond("Approver Role 2 must be different from Approver Role 1.", ephemeral=True)
+                return await ctx.respond(
+                    "Approver Role 2 must be different from Approver Role 1.",
+                    ephemeral=True,
+                )
 
         role_names = [approver_role_1.name]
         if approver_role_2 is not None:
@@ -174,18 +236,23 @@ class RoleCopCog(commands.Cog):
         )
 
     # ---------------- Utility commands ----------------
-    @commands.slash_command(name="who_has_role", description="List members who have a specific role (admin only).")
+    @commands.slash_command(
+        name="who_has_role",
+        description="List members who have a specific role (admin only).",
+    )
     async def who_has_role(
         self,
         ctx: discord.ApplicationContext,
-        role: discord.Role = Option(discord.Role, "Role to check", required=True),
+        role: discord.Role = (Option(discord.Role, "Role to check", required=True)),
     ):
         if not ctx.guild or not isinstance(ctx.author, discord.Member):
             return await ctx.respond("Run this in a server.", ephemeral=True)
 
         gcfg = self._get_guild_cfg(ctx.guild)
         if not is_approver(ctx.author, gcfg["approver_role_names"]):
-            return await ctx.respond("You don’t have permission to use this.", ephemeral=True)
+            return await ctx.respond(
+                "You don’t have permission to use this.", ephemeral=True
+            )
 
         members = [m for m in ctx.guild.members if role in m.roles]
         total = len(members)
@@ -196,22 +263,30 @@ class RoleCopCog(commands.Cog):
         msg = f"**{role.name}** has **{total}** member(s).\nShowing first {min(total, 25)}:\n{names}"
         await ctx.respond(msg, ephemeral=True)
 
-    @commands.slash_command(name="user_roles", description="Show the roles a member has (admin only).")
+    @commands.slash_command(
+        name="user_roles", description="Show the roles a member has (admin only)."
+    )
     async def user_roles(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Member = Option(discord.Member, "Member to inspect", required=True),
+        user: discord.Member = (
+            Option(discord.Member, "Member to inspect", required=True)
+        ),
     ):
         if not ctx.guild or not isinstance(ctx.author, discord.Member):
             return await ctx.respond("Run this in a server.", ephemeral=True)
 
         gcfg = self._get_guild_cfg(ctx.guild)
         if not is_approver(ctx.author, gcfg["approver_role_names"]):
-            return await ctx.respond("You don’t have permission to use this.", ephemeral=True)
+            return await ctx.respond(
+                "You don’t have permission to use this.", ephemeral=True
+            )
 
         roles = [r for r in user.roles if r.name != "@everyone"]
         roles_sorted = sorted(roles, key=lambda r: r.position, reverse=True)
-        role_list = ", ".join(r.mention for r in roles_sorted) if roles_sorted else "None"
+        role_list = (
+            ", ".join(r.mention for r in roles_sorted) if roles_sorted else "None"
+        )
         await ctx.respond(f"Roles for {user.mention}:\n{role_list}", ephemeral=True)
 
     # ---------------- Promote/Demote/Kick core ----------------
@@ -239,7 +314,9 @@ class RoleCopCog(commands.Cog):
             return
 
         embed = discord.Embed(title=title, description=description)
-        embed.add_field(name="Requester", value=f"<@{request.requester_id}>", inline=True)
+        embed.add_field(
+            name="Requester", value=f"<@{request.requester_id}>", inline=True
+        )
         embed.add_field(name="Target", value=f"<@{request.target_id}>", inline=True)
         if request.reason:
             embed.add_field(name="Reason", value=request.reason, inline=False)
@@ -264,7 +341,9 @@ class RoleCopCog(commands.Cog):
 
         await ctx.respond("✅ Request sent for approval.", ephemeral=True)
 
-    async def _execute_request(self, interaction: discord.Interaction, request: ApprovalRequest, approved: bool) -> None:
+    async def _execute_request(
+        self, interaction: discord.Interaction, request: ApprovalRequest, approved: bool
+    ) -> None:
         guild = interaction.guild
         if guild is None:
             return
@@ -274,9 +353,17 @@ class RoleCopCog(commands.Cog):
 
         if not approved:
             try:
-                embed = message.embeds[0] if message and message.embeds else discord.Embed(title="RoleCop Request")
+                embed = (
+                    message.embeds[0]
+                    if message and message.embeds
+                    else discord.Embed(title="RoleCop Request")
+                )
                 embed.color = discord.Color.red()
-                embed.add_field(name="Decision", value=f"❌ Denied by {approver.mention}", inline=False)
+                embed.add_field(
+                    name="Decision",
+                    value=f"❌ Denied by {approver.mention}",
+                    inline=False,
+                )
                 await message.edit(embed=embed, view=None)
             except Exception:
                 pass
@@ -301,29 +388,45 @@ class RoleCopCog(commands.Cog):
                 # Extra safe-mode guardrail: bot must be able to manage the role
                 me = guild.me
                 if me and role >= me.top_role:
-                    raise RuntimeError("Bot role hierarchy prevents managing that role.")
+                    raise RuntimeError(
+                        "Bot role hierarchy prevents managing that role."
+                    )
 
                 if request.action == "promote":
                     if role in target.roles:
                         raise RuntimeError("User already has that role.")
-                    await target.add_roles(role, reason=f"Approved by {approver} (RoleCop)")
+                    await target.add_roles(
+                        role, reason=f"Approved by {approver} (RoleCop)"
+                    )
                 else:
                     if role not in target.roles:
                         raise RuntimeError("User does not have that role.")
-                    await target.remove_roles(role, reason=f"Approved by {approver} (RoleCop)")
+                    await target.remove_roles(
+                        role, reason=f"Approved by {approver} (RoleCop)"
+                    )
 
             elif request.action == "kick":
                 target = guild.get_member(request.target_id)
                 if not target:
                     raise RuntimeError("Target not found in guild.")
-                await target.kick(reason=f"Approved by {approver} (RoleCop): {request.reason or 'No reason'}")
+                await target.kick(
+                    reason=f"Approved by {approver} (RoleCop): {request.reason or 'No reason'}"
+                )
 
             else:
                 raise RuntimeError(f"Unknown action: {request.action}")
 
-            embed = message.embeds[0] if message and message.embeds else discord.Embed(title="RoleCop Request")
+            embed = (
+                message.embeds[0]
+                if message and message.embeds
+                else discord.Embed(title="RoleCop Request")
+            )
             embed.color = discord.Color.green()
-            embed.add_field(name="Decision", value=f"✅ Approved by {approver.mention}", inline=False)
+            embed.add_field(
+                name="Decision",
+                value=f"✅ Approved by {approver.mention}",
+                inline=False,
+            )
             await message.edit(embed=embed, view=None)
 
             try:
@@ -333,7 +436,11 @@ class RoleCopCog(commands.Cog):
 
         except Exception as e:
             try:
-                embed = message.embeds[0] if message and message.embeds else discord.Embed(title="RoleCop Request")
+                embed = (
+                    message.embeds[0]
+                    if message and message.embeds
+                    else discord.Embed(title="RoleCop Request")
+                )
                 embed.color = discord.Color.orange()
                 embed.add_field(name="Execution failed", value=str(e), inline=False)
                 await message.edit(embed=embed, view=None)
@@ -341,17 +448,23 @@ class RoleCopCog(commands.Cog):
                 pass
 
             try:
-                await interaction.followup.send(f"Approval succeeded but execution failed: {e}", ephemeral=True)
+                await interaction.followup.send(
+                    f"Approval succeeded but execution failed: {e}", ephemeral=True
+                )
             except Exception:
                 pass
 
     # ---------------- Slash commands ----------------
-    @commands.slash_command(name="promote", description="Request a promotion for a user.")
+    @commands.slash_command(
+        name="promote", description="Request a promotion for a user."
+    )
     async def promote(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Member = Option(discord.Member, "Member to promote", required=True),
-        reason: str = Option(str, "Optional reason", required=False, default=None),
+        user: discord.Member = (
+            Option(discord.Member, "Member to promote", required=True)
+        ),
+        reason: str = (Option(str, "Optional reason", required=False, default=None)),
     ):
         if not ctx.guild or not isinstance(ctx.author, discord.Member):
             return await ctx.respond("Run this in a server.", ephemeral=True)
@@ -360,28 +473,46 @@ class RoleCopCog(commands.Cog):
 
         # Require setup (unless personal guild has defaults that work)
         if not self._is_personal(ctx.guild) and not self._is_configured(gcfg):
-            return await ctx.respond("Not configured yet. An admin must run `/rolecop_setup` first.", ephemeral=True)
+            return await ctx.respond(
+                "Not configured yet. An admin must run `/rolecop_setup` first.",
+                ephemeral=True,
+            )
 
         role_id = gcfg.get("promote_role_id")
         if not isinstance(role_id, int):
-            return await ctx.respond("Promote role is not configured. Run `/rolecop_setup`.", ephemeral=True)
+            return await ctx.respond(
+                "Promote role is not configured. Run `/rolecop_setup`.", ephemeral=True
+            )
 
         role = ctx.guild.get_role(role_id)
         if not role:
-            return await ctx.respond("Configured promote role no longer exists. Re-run `/rolecop_setup`.", ephemeral=True)
+            return await ctx.respond(
+                "Configured promote role no longer exists. Re-run `/rolecop_setup`.",
+                ephemeral=True,
+            )
 
         if role in user.roles:
-            return await ctx.respond(f"✅ {user.mention} already has **{role.name}**.", ephemeral=True)
+            return await ctx.respond(
+                f"✅ {user.mention} already has **{role.name}**.", ephemeral=True
+            )
 
         # If requester is approver, execute instantly
         if is_approver(ctx.author, gcfg["approver_role_names"]):
             try:
-                await user.add_roles(role, reason=f"Direct promote by {ctx.author} (RoleCop)")
-                return await ctx.respond(f"✅ Promoted {user.mention} to **{role.name}**.", ephemeral=True)
+                await user.add_roles(
+                    role, reason=f"Direct promote by {ctx.author} (RoleCop)"
+                )
+                return await ctx.respond(
+                    f"✅ Promoted {user.mention} to **{role.name}**.", ephemeral=True
+                )
             except discord.Forbidden:
-                return await ctx.respond("I don’t have permission to manage that role.", ephemeral=True)
+                return await ctx.respond(
+                    "I don’t have permission to manage that role.", ephemeral=True
+                )
             except discord.HTTPException:
-                return await ctx.respond("Discord API error while promoting.", ephemeral=True)
+                return await ctx.respond(
+                    "Discord API error while promoting.", ephemeral=True
+                )
 
         req = ApprovalRequest(
             requester_id=ctx.author.id,
@@ -398,12 +529,16 @@ class RoleCopCog(commands.Cog):
             description=f"Request to **add** role {role.mention} to {user.mention}.",
         )
 
-    @commands.slash_command(name="demote", description="Request a demotion (remove demote role) for a user.")
+    @commands.slash_command(
+        name="demote", description="Request a demotion (remove demote role) for a user."
+    )
     async def demote(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Member = Option(discord.Member, "Member to demote", required=True),
-        reason: str = Option(str, "Optional reason", required=False, default=None),
+        user: discord.Member = (
+            Option(discord.Member, "Member to demote", required=True)
+        ),
+        reason: str = (Option(str, "Optional reason", required=False, default=None)),
     ):
         if not ctx.guild or not isinstance(ctx.author, discord.Member):
             return await ctx.respond("Run this in a server.", ephemeral=True)
@@ -411,27 +546,45 @@ class RoleCopCog(commands.Cog):
         gcfg = self._get_guild_cfg(ctx.guild)
 
         if not self._is_personal(ctx.guild) and not self._is_configured(gcfg):
-            return await ctx.respond("Not configured yet. An admin must run `/rolecop_setup` first.", ephemeral=True)
+            return await ctx.respond(
+                "Not configured yet. An admin must run `/rolecop_setup` first.",
+                ephemeral=True,
+            )
 
         role_id = gcfg.get("demote_role_id")
         if not isinstance(role_id, int):
-            return await ctx.respond("Demote role is not configured. Run `/rolecop_setup`.", ephemeral=True)
+            return await ctx.respond(
+                "Demote role is not configured. Run `/rolecop_setup`.", ephemeral=True
+            )
 
         role = ctx.guild.get_role(role_id)
         if not role:
-            return await ctx.respond("Configured demote role no longer exists. Re-run `/rolecop_setup`.", ephemeral=True)
+            return await ctx.respond(
+                "Configured demote role no longer exists. Re-run `/rolecop_setup`.",
+                ephemeral=True,
+            )
 
         if role not in user.roles:
-            return await ctx.respond(f"⚠️ {user.mention} does not have **{role.name}**.", ephemeral=True)
+            return await ctx.respond(
+                f"⚠️ {user.mention} does not have **{role.name}**.", ephemeral=True
+            )
 
         if is_approver(ctx.author, gcfg["approver_role_names"]):
             try:
-                await user.remove_roles(role, reason=f"Direct demote by {ctx.author} (RoleCop)")
-                return await ctx.respond(f"✅ Removed **{role.name}** from {user.mention}.", ephemeral=True)
+                await user.remove_roles(
+                    role, reason=f"Direct demote by {ctx.author} (RoleCop)"
+                )
+                return await ctx.respond(
+                    f"✅ Removed **{role.name}** from {user.mention}.", ephemeral=True
+                )
             except discord.Forbidden:
-                return await ctx.respond("I don’t have permission to manage that role.", ephemeral=True)
+                return await ctx.respond(
+                    "I don’t have permission to manage that role.", ephemeral=True
+                )
             except discord.HTTPException:
-                return await ctx.respond("Discord API error while demoting.", ephemeral=True)
+                return await ctx.respond(
+                    "Discord API error while demoting.", ephemeral=True
+                )
 
         req = ApprovalRequest(
             requester_id=ctx.author.id,
@@ -448,12 +601,17 @@ class RoleCopCog(commands.Cog):
             description=f"Request to **remove** role {role.mention} from {user.mention}.",
         )
 
-    @commands.slash_command(name="kick", description="Request to kick a user (approval required unless approver).")
+    @commands.slash_command(
+        name="kick",
+        description="Request to kick a user (approval required unless approver).",
+    )
     async def kick(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Member = Option(discord.Member, "Member to kick", required=True),
-        reason: str = Option(str, "Optional reason", required=False, default=None),
+        user: discord.Member = (
+            Option(discord.Member, "Member to kick", required=True)
+        ),
+        reason: str = (Option(str, "Optional reason", required=False, default=None)),
     ):
         if not ctx.guild or not isinstance(ctx.author, discord.Member):
             return await ctx.respond("Run this in a server.", ephemeral=True)
@@ -461,16 +619,25 @@ class RoleCopCog(commands.Cog):
         gcfg = self._get_guild_cfg(ctx.guild)
 
         if not self._is_personal(ctx.guild) and not self._is_configured(gcfg):
-            return await ctx.respond("Not configured yet. An admin must run `/rolecop_setup` first.", ephemeral=True)
+            return await ctx.respond(
+                "Not configured yet. An admin must run `/rolecop_setup` first.",
+                ephemeral=True,
+            )
 
         if is_approver(ctx.author, gcfg["approver_role_names"]):
             try:
-                await user.kick(reason=f"Direct kick by {ctx.author} (RoleCop): {reason or 'No reason'}")
+                await user.kick(
+                    reason=f"Direct kick by {ctx.author} (RoleCop): {reason or 'No reason'}"
+                )
                 return await ctx.respond(f"✅ Kicked {user.mention}.", ephemeral=True)
             except discord.Forbidden:
-                return await ctx.respond("I don’t have permission to kick members.", ephemeral=True)
+                return await ctx.respond(
+                    "I don’t have permission to kick members.", ephemeral=True
+                )
             except discord.HTTPException:
-                return await ctx.respond("Discord API error while kicking.", ephemeral=True)
+                return await ctx.respond(
+                    "Discord API error while kicking.", ephemeral=True
+                )
 
         req = ApprovalRequest(
             requester_id=ctx.author.id,

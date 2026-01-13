@@ -33,6 +33,7 @@ select = [
 # Ignore rules that are noisy for async / bots
 ignore = [
   "E501",  # line length (formatter handles this)
+  "B008"
 ]
 
 

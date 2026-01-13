@@ -12,7 +12,7 @@ ROLECOP_DIR = PROJECT_ROOT / "modules" / "rolecop"
 CONFIG_DIR = ROLECOP_DIR / "config"
 STORAGE_DIR = ROLECOP_DIR / "storage"
 
-PUBLIC_CONFIG_PATH = CONFIG_DIR / "default.json"          # <- matches your screenshot
+PUBLIC_CONFIG_PATH = CONFIG_DIR / "default.json"  # <- matches your screenshot
 PERSONAL_CONFIG_PATH = CONFIG_DIR / "personal_config.json"  # <- matches your screenshot
 GUILD_SETTINGS_PATH = STORAGE_DIR / "guild_settings.json"
 
@@ -59,7 +59,9 @@ def load_runtime_config() -> RoleCopRuntimeConfig:
     if not isinstance(defaults, dict):
         defaults = merged  # fallback
 
-    role_names = defaults.get("approver_role_names", defaults.get("approver_role_names", []))
+    role_names = defaults.get(
+        "approver_role_names", defaults.get("approver_role_names", [])
+    )
     if not isinstance(role_names, list):
         role_names = []
 
