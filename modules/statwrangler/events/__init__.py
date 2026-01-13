@@ -1,5 +1,5 @@
 from .bot_init import on_ready_bot as on_ready_bot
-from .intents import botstuff, intent
+from .intents import botstuff as botstuff, intent as intent
 from .env_check import get_env_vars as get_env_vars
 #from .key_hole import DISCORD_BOT_TOKEN
 from .r6.r6_scraper import get_r6siege_player_data as get_r6siege_player_data
