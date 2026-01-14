@@ -16,7 +16,7 @@ exclude = [
 ]
 
 # Autofix behavior (local only, CI still checks)
-fix = true
+fix = false
 unsafe-fixes = false
 
 
@@ -35,6 +35,10 @@ ignore = [
   "E501",  # line length (formatter handles this)
   "B008"
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"modules/**/cog.py" = ["UP007"]
+"modules/**/commands.py" = ["UP007"]
 
 
 [tool.ruff.lint.isort]
