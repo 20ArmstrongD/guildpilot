@@ -1,6 +1,6 @@
 py-cord==2.6.1
 openai==2.15.0
-python-dotenv==1.0.1
+python-dotenv==1.2.1
 
 # Only if you actually use them:
 aiohttp>=3.13.3
