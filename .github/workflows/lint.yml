@@ -1,7 +1,13 @@
 name: CI/CD — Code Quality (Linter)
 
+run-name: >-
+  ${{ github.workflow }} • ${{ github.event_name == 'pull_request'
+    && format('PR {0} → {1}', github.head_ref, github.base_ref)
+    || format('{0} on {1}', github.event_name, github.ref_name) }}
+
 on:
   pull_request:
+    branches: [ main, dev ]
   push:
     branches: [ main, dev ]
 
@@ -14,7 +20,10 @@ permissions:
 
 jobs:
   ruff:
-    name: Ruff (lint + format check)
+    name: >-
+      Ruff (lint + format) • ${{ github.event_name == 'pull_request'
+        && format('{0} → {1}', github.head_ref, github.base_ref)
+        || github.ref_name }}
     runs-on: ubuntu-latest
 
     steps:

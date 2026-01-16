@@ -1,5 +1,7 @@
 name: release
 
+run-name: Release • ${{ github.ref_name }}
+
 on:
   push:
     tags:
@@ -10,6 +12,7 @@ permissions:
 
 jobs:
   github-release:
+    name: github-release • ${{ github.ref_name }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

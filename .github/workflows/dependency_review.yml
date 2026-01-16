@@ -1,13 +1,19 @@
 name: Security — Dependency Change Review
 
+run-name: >-
+  ${{ github.workflow }} • PR ${{ github.head_ref }} → ${{ github.base_ref }}
+
 on:
   pull_request:
+    branches: [ main, dev ]
 
 permissions:
   contents: read
 
 jobs:
   dependency-review:
+    name: >-
+      dependency-review • ${{ github.head_ref }} → ${{ github.base_ref }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
