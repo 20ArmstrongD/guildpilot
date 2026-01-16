@@ -2,7 +2,7 @@ name: Security — Code Analysis
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, dev ]
   pull_request:
   schedule:
     - cron: "0 9 * * 1"

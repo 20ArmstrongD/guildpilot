@@ -3,7 +3,7 @@ name: CI/CD — Build & Test
 on:
   pull_request:
   push:
-    branches: [ main, master ]
+    branches: [ main, dev]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
