@@ -34,7 +34,7 @@ def main():
         ("core.guilds", "modules.core.guilds.guilds_tracker"),
         ("pilotai", "modules.pilotai.commands"),
         ("statwrangler", "modules.statwrangler.commands"),
-        ("streamsentinel", "modules.streamsentinel.commands"),
+        # ("streamsentinel", "modules.streamsentinel.commands"),
         ("rolecop", "modules.rolecop"),
     ]
     # on startup
