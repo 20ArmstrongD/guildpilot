@@ -24,3 +24,5 @@ modules/rolecop/storage/guild_settings.json
 # RoleCop personal config
 modules/rolecop/config/personal_config.json
 
+modules/streamsentinel/
+

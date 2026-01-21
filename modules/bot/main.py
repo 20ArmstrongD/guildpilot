@@ -37,6 +37,8 @@ def main():
         ("streamsentinel", "modules.streamsentinel.commands"),
         ("rolecop", "modules.rolecop"),
     ]
+    # on startup
+    print("[BOOT] loading modules")
 
     loaded = []
     for name, path in modules_to_load:
@@ -55,6 +57,7 @@ def main():
             print(f"  * /{c.name}")
 
     bot.run(config.discord_token)
+    
 
 
 if __name__ == "__main__":
