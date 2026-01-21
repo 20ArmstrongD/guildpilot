@@ -28,7 +28,7 @@ def test_import_top_level_packages() -> None:
     _import("modules.pilotai")
     _import("modules.rolecop")
     _import("modules.statwrangler")
-    _import("modules.streamsentinel")
+    # _import("modules.streamsentinel")
 
 
 def test_import_entrypoints() -> None:

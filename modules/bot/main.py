@@ -57,7 +57,6 @@ def main():
             print(f"  * /{c.name}")
 
     bot.run(config.discord_token)
-    
 
 
 if __name__ == "__main__":
