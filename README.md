@@ -3,7 +3,6 @@
 ![CI/CD — Build & Test](https://github.com/20ArmstrongD/guildpilot/actions/workflows/ci.yml/badge.svg)
 ![CI/CD — Code Quality](https://github.com/20ArmstrongD/guildpilot/actions/workflows/lint.yml/badge.svg)
 ![Security — Secret Detection](https://github.com/20ArmstrongD/guildpilot/actions/workflows/gitleaks.yml/badge.svg)
-![Security — Dependency Audit](https://github.com/20ArmstrongD/guildpilot/actions/workflows/pip-audit.yml/badge.svg)
 ![Security — Code Analysis](https://github.com/20ArmstrongD/guildpilot/actions/workflows/codeql.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 <!-- ![License](https://img.shields.io/github/license/20ArmstrongD/guildpilot)  -->
@@ -36,13 +35,6 @@ Rather than running multiple bots per server, GuildPilot acts as a **central com
 - Slash-command driven AI conversations
 - Context-aware responses (per channel / per user)
 - Optional conversation reset and logging
-
-### 📡 StreamSentinel (Streaming Notifications)
-- Twitch live/offline notifications
-- Stream metadata (game, title, duration)
-- Support for multiple streamers per server
-
----
 
 ## 🧱 Architecture Overview
 
