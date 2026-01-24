@@ -3,7 +3,7 @@ import logging
 
 import discord
 
-from modules.core.env_check.env_check import get_env_vars, get_dev_env_vars
+from modules.core.env_check.env_check import get_dev_env_vars, get_env_vars
 
 
 def configure_logging() -> None:
