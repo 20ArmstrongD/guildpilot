@@ -1,9 +1,15 @@
 name: Security — Secret Detection
 
+run-name: >-
+  ${{ github.workflow }} • ${{ github.event_name == 'pull_request'
+    && format('PR {0} → {1}', github.head_ref, github.base_ref)
+    || format('{0} on {1}', github.event_name, github.ref_name) }}
+
 on:
   pull_request:
+    branches: [ main, dev ]
   push:
-    branches: [ main, master ]
+    branches: [ main, dev ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,6 +20,10 @@ permissions:
 
 jobs:
   gitleaks:
+    name: >-
+      gitleaks • ${{ github.event_name == 'pull_request'
+        && format('{0} → {1}', github.head_ref, github.base_ref)
+        || github.ref_name }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

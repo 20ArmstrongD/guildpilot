@@ -1,12 +1,18 @@
 name: CI/CD — Build & Test
 
+run-name: >-
+  CI • ${{ github.event_name == 'pull_request'
+    && format('PR {0} → {1}', github.head_ref, github.base_ref)
+    || format('{0} on {1}', github.event_name, github.ref_name) }}
+
 on:
   pull_request:
+    branches: [ main, dev ]
   push:
-    branches: [ main, master ]
+    branches: [ main, dev ]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -14,7 +20,10 @@ permissions:
 
 jobs:
   syntax:
-    name: Syntax (compile)
+    name: >-
+      Syntax (compile) • ${{ github.event_name == 'pull_request'
+        && format('{0} → {1}', github.head_ref, github.base_ref)
+        || github.ref_name }}
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +45,10 @@ jobs:
           python -m compileall .
 
   test:
-    name: Tests (pytest)
+    name: >-
+      Tests (pytest) • ${{ github.event_name == 'pull_request'
+        && format('{0} → {1}', github.head_ref, github.base_ref)
+        || github.ref_name }}
     runs-on: ubuntu-latest
     needs: syntax
 
@@ -58,3 +70,4 @@ jobs:
       - name: Run tests
         run: |
           pytest -q
+          echo "All tests passed!"
