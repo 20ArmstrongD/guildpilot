@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import json
 from dataclasses import dataclass
@@ -7,10 +9,11 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 
-PROJECT_ROOT = (
-    Path(__file__).resolve().parents[3]
-)  # guild_tracker.py -> guilds -> core -> modules -> PROJECT
-GUILD_LOG_PATH = PROJECT_ROOT / "modules" / "core" / "guilds" / "guilds.json"
+# guild_tracker.py -> guilds -> core -> modules -> PROJECT
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+DEFAULT_DEV_REGISTRY = PROJECT_ROOT / "modules" / "core" / "guilds" / "dev_guilds.json"
+DEFAULT_PUBLIC_REGISTRY = PROJECT_ROOT / "modules" / "core" / "guilds" / "guilds_public.json"
 
 
 @dataclass
@@ -22,31 +25,59 @@ class GuildInfo:
 
 
 class GuildTracker(commands.Cog):
+    """
+    Tracks guilds the bot is in and stores them in a registry JSON file.
+
+    Behavior:
+      - If bot.guild_registry_path is set (a pathlib.Path), we use that file.
+      - Otherwise, we fall back based on bot.flavor ("dev" vs "public").
+      - If neither is present, we default to dev registry.
+    """
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self._task: asyncio.Task | None = None
         self.reconcile_every_seconds = 300  # 5 minutes
 
+        # Pick registry file
+        self.guild_log_path: Path = self._resolve_registry_path()
+
+    def _resolve_registry_path(self) -> Path:
+        # 1) Explicit override: set by build_bot()
+        p = getattr(self.bot, "guild_registry_path", None)
+        if isinstance(p, Path):
+            return p
+
+        # 2) Otherwise infer from flavor
+        flavor = getattr(self.bot, "flavor", "dev")
+        if flavor == "public":
+            return DEFAULT_PUBLIC_REGISTRY
+        return DEFAULT_DEV_REGISTRY
+
     def _utc_now(self) -> str:
         return datetime.now(UTC).isoformat()
 
     def _load(self) -> dict:
-        GUILD_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
-        if not GUILD_LOG_PATH.exists():
+        self.guild_log_path.parent.mkdir(parents=True, exist_ok=True)
+        if not self.guild_log_path.exists():
             return {"servers": []}
+
         try:
-            with GUILD_LOG_PATH.open("r", encoding="utf-8") as f:
+            with self.guild_log_path.open("r", encoding="utf-8") as f:
                 data = json.load(f)
+
             if not isinstance(data, dict) or "servers" not in data:
                 return {"servers": []}
             if not isinstance(data["servers"], list):
                 return {"servers": []}
             return data
+
         except Exception:
             return {"servers": []}
 
     def _save(self, data: dict) -> None:
-        with open(GUILD_LOG_PATH, "w", encoding="utf-8") as f:
+        self.guild_log_path.parent.mkdir(parents=True, exist_ok=True)
+        with self.guild_log_path.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
     def _upsert_guilds(self, guilds: list[discord.Guild]) -> None:
@@ -65,6 +96,9 @@ class GuildTracker(commands.Cog):
             if existing:
                 existing["name"] = g.name
                 existing["last_seen_utc"] = now
+                # If it was previously marked left, clear it (optional)
+                if "left_at_utc" in existing:
+                    existing.pop("left_at_utc", None)
             else:
                 by_id[gid] = {
                     "id": g.id,
@@ -73,7 +107,7 @@ class GuildTracker(commands.Cog):
                     "last_seen_utc": now,
                 }
 
-        # Optional: mark guilds we no longer see as "left"
+        # Mark guilds we no longer see as "left"
         current_ids = {str(g.id) for g in guilds}
         for gid, rec in by_id.items():
             if gid not in current_ids:
@@ -92,7 +126,6 @@ class GuildTracker(commands.Cog):
             await asyncio.sleep(self.reconcile_every_seconds)
 
     def cog_load(self) -> None:
-        # Start background reconciliation task
         if self._task is None:
             self._task = self.bot.loop.create_task(self._reconcile_loop())
 
@@ -102,19 +135,22 @@ class GuildTracker(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self) -> None:
-        # Snapshot on startup
         self._upsert_guilds(list(self.bot.guilds))
-        print(f"[guildtracker] snapshot saved ({len(self.bot.guilds)} guilds)")
+        flavor = getattr(self.bot, "flavor", "?")
+        print(f"[guildtracker:{flavor}] snapshot saved ({len(self.bot.guilds)} guilds) -> {self.guild_log_path}")
+
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
         self._upsert_guilds(list(self.bot.guilds))
-        print(f"[guildtracker] joined: {guild.name} ({guild.id})")
+        flavor = getattr(self.bot, "flavor", "?")
+        print(f"[guildtracker:{flavor}] joined: {guild.name} ({guild.id})")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         self._upsert_guilds(list(self.bot.guilds))
-        print(f"[guildtracker] removed: {guild.name} ({guild.id})")
+        flavor = getattr(self.bot, "flavor", "?")
+        print(f"[guildtracker:{flavor}] removed: {guild.name} ({guild.id})")
 
 
 def setup(bot: commands.Bot) -> None:
