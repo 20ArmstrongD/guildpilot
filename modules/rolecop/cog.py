@@ -75,7 +75,6 @@ class RoleCopCog(commands.Cog):
         approver_role_names = overrides.get(
             "approver_role_names", self.cfg.approver_role_names
         )
-        safe_mode = overrides.get("safe_mode", self.cfg.safe_mode_default)
         max_managed_role_id = overrides.get("max_managed_role_id")
 
         return {
@@ -122,7 +121,7 @@ class RoleCopCog(commands.Cog):
     async def on_ready(self) -> None:
         # Force-migrate safe_mode to True for ALL guilds
         changed = False
-        for gid, cfg in self.guild_settings.items():
+        for _gid, cfg in self.guild_settings.items():
             if cfg.get("safe_mode") is not True:
                 cfg["safe_mode"] = True
                 changed = True
@@ -133,7 +132,6 @@ class RoleCopCog(commands.Cog):
 
         # Ensure personal guild is pre-configured so you don't have to run /rolecop_setup there.
         await self._ensure_personal_guild_config()
-
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
@@ -167,7 +165,7 @@ class RoleCopCog(commands.Cog):
             )
 
         self.guild_settings[key] = {
-            "safe_mode": True,  
+            "safe_mode": True,
             "approvals_channel_name": approvals_channel.name
             if approvals_channel
             else approvals_name,
@@ -252,6 +250,8 @@ class RoleCopCog(commands.Cog):
             pass
 
     # ---------------- Setup command (public servers) ----------------
+
+
 @commands.slash_command(
     name="rolecop_setup",
     description="Configure RoleCop for this server (admin only).",
