@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+
 from discord.ext import commands
+from modules.utils.guild_sync import sync_commands_to_guilds_from_file
+
 
 async def sync_from_registry(
     bot: commands.Bot,

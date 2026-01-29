@@ -577,7 +577,7 @@ class RoleCopCog(commands.Cog):
                 f"✅ {user.mention} already has {role.mention}.", ephemeral=True
             )
 
-        requester_is_approver = is_approver(ctx.author, gcfg["approver_role_names"])
+        
 
 
         req = ApprovalRequest(
@@ -633,7 +633,7 @@ class RoleCopCog(commands.Cog):
                 f"⚠️ {user.mention} does not have {role.mention}.", ephemeral=True
             )
 
-        requester_is_approver = is_approver(ctx.author, gcfg["approver_role_names"])
+        
     
         req = ApprovalRequest(
             requester_id=ctx.author.id,
@@ -675,7 +675,7 @@ class RoleCopCog(commands.Cog):
                 ephemeral=True,
             )
 
-        requester_is_approver = is_approver(ctx.author, gcfg["approver_role_names"])
+        
 
         req = ApprovalRequest(
             requester_id=ctx.author.id,

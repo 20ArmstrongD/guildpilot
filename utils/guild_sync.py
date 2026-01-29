@@ -5,10 +5,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from discord.ext import commands
+import discord
 
-
-from typing import Any
 
 def extract_guild_ids(data: Any) -> list[int]:
     guild_ids: set[int] = set()

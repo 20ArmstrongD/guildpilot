@@ -1,12 +1,11 @@
 import asyncio
 import logging
+from pathlib import Path
 
 import discord
 
 from modules.core.env_check.env_check import get_dev_env_vars, get_env_vars
 from utils.guild_sync import sync_commands_to_guilds_from_file
-from utils.sync_strat import sync_from_registry
-from pathlib import Path
 
 
 def configure_logging() -> None:
