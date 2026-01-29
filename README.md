@@ -5,53 +5,93 @@
 ![Security — Secret Detection](https://github.com/20ArmstrongD/guildpilot/actions/workflows/gitleaks.yml/badge.svg)
 ![Security — Code Analysis](https://github.com/20ArmstrongD/guildpilot/actions/workflows/codeql.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
-<!-- ![License](https://img.shields.io/github/license/20ArmstrongD/guildpilot)  -->
 
 A modular, production-ready Discord bot ecosystem built with Python and py-cord, featuring CI/CD, automated testing, and security-first workflows.
 
+# 🛩️ GuildPilot  
+### Modular Discord Automation, Intelligence & Governance Platform
 
+GuildPilot is a **production-grade, modular Discord bot platform** designed for automation, role governance, analytics, and intelligent interaction.  
+Built with **scalability, multi-environment deployments, and real engineering discipline**, GuildPilot is intended for both **community servers** and **professional organizations**.
 
-**GuildPilot** is an all-in-one Discord bot designed to manage server operations through a modular, scalable architecture.  
-It combines member role automation, game stat lookups, AI chat capabilities, and streaming notifications into a single bot identity.
-
-Rather than running multiple bots per server, GuildPilot acts as a **central command hub** with internally separated modules for maintainability and growth.
+GuildPilot is not a single-purpose bot — it is a **platform**.
 
 ---
 
-## 🚀 Features
+## ✨ Core Features
 
-### 🛡️ RoleCop (Member & Role Management)
-- Automatic role assignment on member join
-- Admin-controlled promotion and demotion
-- Role hierarchy validation
-- Server-aware logging
+### 🤖 AI Interaction (PilotAI)
+- `/ask-the-pilot` — AI-powered assistant for server members  
+- Context-aware responses  
+- Modular AI backend designed for future expansion  
 
-### 🎮 StatWrangler (Game Statistics)
-- Lookup player stats for supported games
-- Modular provider system for adding new games
-- Clean, embedded Discord responses
+---
 
-### 🤖 PilotAI (AI Chatbot)
-- Slash-command driven AI conversations
-- Context-aware responses (per channel / per user)
-- Optional conversation reset and logging
+### 🛡️ RoleCop — Role Governance & Approval System
+A structured governance framework for role management:
 
-## 🧱 Architecture Overview
+- Role promotions & demotions  
+- Approval-based workflows  
+- Multi-approver support  
+- Admin override mode  
+- Safe-mode transparency  
+- Audit-friendly approval visibility  
+- Permission hierarchy enforcement  
 
-GuildPilot uses a **modular monolith** design:
+> Built for accountability, not chaos.
 
-- **One Discord bot**
-- **Multiple internal modules**
-- Shared configuration, logging, and database layer
+---
 
-```text
-guildpilot/
-├── bot.py                  # Application entry point
-├── core/                   # Bot initialization & shared logic
-├── modules/                # Feature modules
-│   ├── role_cop/
-│   ├── stat_wrangler/
-│   ├── pilot_ai/
-│   └── stream_sentinel/
-├── utils/                  # Helpers, embeds, DB utilities
-└── guildpilot.service      # systemd service definition
+### 📊 StatWrangler — Analytics & Data Tools
+- Server activity tracking  
+- Structured JSON analytics pipelines  
+- User engagement metrics  
+- Expandable data-collection architecture  
+
+---
+
+### 🧭 Community & Utility Commands
+- `/who_has_role` — Query role membership  
+- `/user_roles` — Inspect user role assignments  
+- `/game_stats` — Game/player lookups  
+- `/kick` — Moderation support  
+- `/promote` / `/demote` — Governance-controlled role actions  
+
+---
+
+## 🧠 Architecture Highlights
+
+GuildPilot is engineered like a **real system**, not a hobby script.
+
+---
+
+### 🧪 Dual-Environment Deployment
+- **Dev Bot**
+  - Fast guild-sync iteration  
+  - Experimental testing  
+- **Public Bot**
+  - Controlled production rollout  
+  - Registry-based deployment  
+  - Stability-focused runtime  
+
+---
+
+### 📂 Guild Registry System
+- Automatically tracks servers  
+- Separate registries for Dev & Public environments  
+- JSON-backed deployment model  
+- Controlled command propagation  
+- Server-aware configuration loading  
+
+---
+
+### 🧩 Modular Feature Architecture
+
+GuildPilot is structured as a modular platform, with each system isolated into a dedicated feature domain:
+
+- **modules/bot/** — Multi-bot runtime & startup orchestration  
+- **modules/core/** — Guild registry, configuration, and environment management  
+- **modules/pilotai/** — AI interaction engine and response handling  
+- **modules/rolecop/** — Role governance, approvals, and moderation workflows  
+- **modules/statwrangler/** — Analytics, tracking, and metrics processing  
+- **utils/** — Command sync utilities and shared helper logic  

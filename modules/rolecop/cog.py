@@ -75,15 +75,10 @@ class RoleCopCog(commands.Cog):
         approver_role_names = overrides.get(
             "approver_role_names", self.cfg.approver_role_names
         )
-        safe_mode = overrides.get("safe_mode", self.cfg.safe_mode_default)
         max_managed_role_id = overrides.get("max_managed_role_id")
 
-        # Personal guild should not be forced into safe mode
-        if self._is_personal(guild):
-            safe_mode = False
-
         return {
-            "safe_mode": bool(safe_mode),
+            "safe_mode": True,
             "approvals_channel_name": approvals_channel_name,
             "approvals_channel_id": approvals_channel_id,
             "approver_role_names": list(approver_role_names)
@@ -124,6 +119,17 @@ class RoleCopCog(commands.Cog):
     # ---------------- Auto-setup (personal guild) ----------------
     @commands.Cog.listener()
     async def on_ready(self) -> None:
+        # Force-migrate safe_mode to True for ALL guilds
+        changed = False
+        for _gid, cfg in self.guild_settings.items():
+            if cfg.get("safe_mode") is not True:
+                cfg["safe_mode"] = True
+                changed = True
+
+        if changed:
+            save_guild_settings(self.cfg.guild_settings_path, self.guild_settings)
+            print("[RoleCop] Migrated safe_mode -> True for all guilds")
+
         # Ensure personal guild is pre-configured so you don't have to run /rolecop_setup there.
         await self._ensure_personal_guild_config()
 
@@ -159,7 +165,7 @@ class RoleCopCog(commands.Cog):
             )
 
         self.guild_settings[key] = {
-            "safe_mode": False,  # personal guild should be convenient by default
+            "safe_mode": True,
             "approvals_channel_name": approvals_channel.name
             if approvals_channel
             else approvals_name,
@@ -244,6 +250,7 @@ class RoleCopCog(commands.Cog):
             pass
 
     # ---------------- Setup command (public servers) ----------------
+
     @commands.slash_command(
         name="rolecop_setup",
         description="Configure RoleCop for this server (admin only).",
@@ -273,17 +280,10 @@ class RoleCopCog(commands.Cog):
             required=False,
             default=None,
         ),
-        safe_mode: bool = discord.option(
-            bool,
-            "If enabled, even approvers require button approval (two-person action)",
-            required=False,
-            default=False,
-        ),
     ):
         if not ctx.guild or not isinstance(ctx.author, discord.Member):
             return await ctx.respond("Run this command in a server.", ephemeral=True)
 
-        # Only real admins/managers can configure
         if not (
             ctx.author.guild_permissions.administrator
             or ctx.author.guild_permissions.manage_roles
@@ -296,9 +296,8 @@ class RoleCopCog(commands.Cog):
         if approver_role_2:
             role_names.append(approver_role_2.name)
 
-        # Save per-guild config
         self.guild_settings[str(ctx.guild.id)] = {
-            "safe_mode": bool(safe_mode),
+            "safe_mode": True,  # forced ON
             "approvals_channel_name": approvals_channel.name,
             "approvals_channel_id": approvals_channel.id,
             "approver_role_names": role_names,
@@ -313,7 +312,7 @@ class RoleCopCog(commands.Cog):
             f"- Approvals channel: **#{approvals_channel.name}**\n"
             f"- Approver roles: **{', '.join(role_names)}**\n"
             f"- Boundary role: {boundary_txt}\n"
-            f"- Safe mode: **{safe_mode}**"
+            f"- Safe mode: **ON**"
         )
         return await ctx.respond(msg, ephemeral=True)
 
@@ -577,24 +576,6 @@ class RoleCopCog(commands.Cog):
                 f"✅ {user.mention} already has {role.mention}.", ephemeral=True
             )
 
-        requester_is_approver = is_approver(ctx.author, gcfg["approver_role_names"])
-        if requester_is_approver and not gcfg["safe_mode"]:
-            try:
-                await user.add_roles(
-                    role, reason=f"Direct promote by {ctx.author} (RoleCop)"
-                )
-                return await ctx.respond(
-                    f"✅ Added {role.mention} to {user.mention}.", ephemeral=True
-                )
-            except discord.Forbidden:
-                return await ctx.respond(
-                    "I don’t have permission to manage that role.", ephemeral=True
-                )
-            except discord.HTTPException:
-                return await ctx.respond(
-                    "Discord API error while promoting.", ephemeral=True
-                )
-
         req = ApprovalRequest(
             requester_id=ctx.author.id,
             target_id=user.id,
@@ -648,24 +629,6 @@ class RoleCopCog(commands.Cog):
                 f"⚠️ {user.mention} does not have {role.mention}.", ephemeral=True
             )
 
-        requester_is_approver = is_approver(ctx.author, gcfg["approver_role_names"])
-        if requester_is_approver and not gcfg["safe_mode"]:
-            try:
-                await user.remove_roles(
-                    role, reason=f"Direct demote by {ctx.author} (RoleCop)"
-                )
-                return await ctx.respond(
-                    f"✅ Removed {role.mention} from {user.mention}.", ephemeral=True
-                )
-            except discord.Forbidden:
-                return await ctx.respond(
-                    "I don’t have permission to manage that role.", ephemeral=True
-                )
-            except discord.HTTPException:
-                return await ctx.respond(
-                    "Discord API error while demoting.", ephemeral=True
-                )
-
         req = ApprovalRequest(
             requester_id=ctx.author.id,
             target_id=user.id,
@@ -705,22 +668,6 @@ class RoleCopCog(commands.Cog):
                 "RoleCop isn’t configured here. An admin must run `/rolecop_setup`.",
                 ephemeral=True,
             )
-
-        requester_is_approver = is_approver(ctx.author, gcfg["approver_role_names"])
-        if requester_is_approver and not gcfg["safe_mode"]:
-            try:
-                await user.kick(
-                    reason=f"Direct kick by {ctx.author} (RoleCop): {reason or 'No reason'}"
-                )
-                return await ctx.respond(f"✅ Kicked {user.mention}.", ephemeral=True)
-            except discord.Forbidden:
-                return await ctx.respond(
-                    "I don’t have permission to kick members.", ephemeral=True
-                )
-            except discord.HTTPException:
-                return await ctx.respond(
-                    "Discord API error while kicking.", ephemeral=True
-                )
 
         req = ApprovalRequest(
             requester_id=ctx.author.id,

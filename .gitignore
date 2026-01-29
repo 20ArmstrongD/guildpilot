@@ -15,8 +15,11 @@ __pycache__/*
 # code folders
 
 # Runtime / bot state
-modules/core/guilds/guilds.json
+modules/core/guilds/dev_guilds.json
+modules/core/guilds/public_guilds.json
 modules/statwrangler/json/guilds.json
+modules/statwrangler/json/
+
 # RoleCop private config + runtime state
 # RoleCop runtime data
 modules/rolecop/storage/guild_settings.json
