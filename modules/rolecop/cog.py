@@ -78,12 +78,8 @@ class RoleCopCog(commands.Cog):
         safe_mode = overrides.get("safe_mode", self.cfg.safe_mode_default)
         max_managed_role_id = overrides.get("max_managed_role_id")
 
-        # Personal guild should not be forced into safe mode
-        if self._is_personal(guild):
-            safe_mode = False
-
         return {
-            "safe_mode": bool(safe_mode),
+            "safe_mode": True,
             "approvals_channel_name": approvals_channel_name,
             "approvals_channel_id": approvals_channel_id,
             "approver_role_names": list(approver_role_names)
@@ -124,8 +120,20 @@ class RoleCopCog(commands.Cog):
     # ---------------- Auto-setup (personal guild) ----------------
     @commands.Cog.listener()
     async def on_ready(self) -> None:
+        # Force-migrate safe_mode to True for ALL guilds
+        changed = False
+        for gid, cfg in self.guild_settings.items():
+            if cfg.get("safe_mode") is not True:
+                cfg["safe_mode"] = True
+                changed = True
+
+        if changed:
+            save_guild_settings(self.cfg.guild_settings_path, self.guild_settings)
+            print("[RoleCop] Migrated safe_mode -> True for all guilds")
+
         # Ensure personal guild is pre-configured so you don't have to run /rolecop_setup there.
         await self._ensure_personal_guild_config()
+
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
@@ -159,7 +167,7 @@ class RoleCopCog(commands.Cog):
             )
 
         self.guild_settings[key] = {
-            "safe_mode": False,  # personal guild should be convenient by default
+            "safe_mode": True,  
             "approvals_channel_name": approvals_channel.name
             if approvals_channel
             else approvals_name,
@@ -244,78 +252,70 @@ class RoleCopCog(commands.Cog):
             pass
 
     # ---------------- Setup command (public servers) ----------------
-    @commands.slash_command(
-        name="rolecop_setup",
-        description="Configure RoleCop for this server (admin only).",
-    )
-    async def rolecop_setup(
-        self,
-        ctx: discord.ApplicationContext,
-        approvals_channel: discord.TextChannel = discord.option(
-            discord.TextChannel,
-            "Channel where approval requests are posted",
-            required=True,
-        ),
-        approver_role_1: discord.Role = discord.option(
-            discord.Role,
-            "Role allowed to approve/deny requests",
-            required=True,
-        ),
-        approver_role_2: discord.Role = discord.option(
-            discord.Role,
-            "Optional second approver role",
-            required=False,
-            default=None,
-        ),
-        max_managed_role: discord.Role = discord.option(
-            discord.Role,
-            "Optional boundary role (RoleCop can only manage roles BELOW this role)",
-            required=False,
-            default=None,
-        ),
-        safe_mode: bool = discord.option(
-            bool,
-            "If enabled, even approvers require button approval (two-person action)",
-            required=False,
-            default=False,
-        ),
+@commands.slash_command(
+    name="rolecop_setup",
+    description="Configure RoleCop for this server (admin only).",
+)
+async def rolecop_setup(
+    self,
+    ctx: discord.ApplicationContext,
+    approvals_channel: discord.TextChannel = discord.option(
+        discord.TextChannel,
+        "Channel where approval requests are posted",
+        required=True,
+    ),
+    approver_role_1: discord.Role = discord.option(
+        discord.Role,
+        "Role allowed to approve/deny requests",
+        required=True,
+    ),
+    approver_role_2: discord.Role = discord.option(
+        discord.Role,
+        "Optional second approver role",
+        required=False,
+        default=None,
+    ),
+    max_managed_role: discord.Role = discord.option(
+        discord.Role,
+        "Optional boundary role (RoleCop can only manage roles BELOW this role)",
+        required=False,
+        default=None,
+    ),
+):
+    if not ctx.guild or not isinstance(ctx.author, discord.Member):
+        return await ctx.respond("Run this command in a server.", ephemeral=True)
+
+    if not (
+        ctx.author.guild_permissions.administrator
+        or ctx.author.guild_permissions.manage_roles
     ):
-        if not ctx.guild or not isinstance(ctx.author, discord.Member):
-            return await ctx.respond("Run this command in a server.", ephemeral=True)
-
-        # Only real admins/managers can configure
-        if not (
-            ctx.author.guild_permissions.administrator
-            or ctx.author.guild_permissions.manage_roles
-        ):
-            return await ctx.respond(
-                "You need Administrator or Manage Roles to run setup.", ephemeral=True
-            )
-
-        role_names = [approver_role_1.name]
-        if approver_role_2:
-            role_names.append(approver_role_2.name)
-
-        # Save per-guild config
-        self.guild_settings[str(ctx.guild.id)] = {
-            "safe_mode": bool(safe_mode),
-            "approvals_channel_name": approvals_channel.name,
-            "approvals_channel_id": approvals_channel.id,
-            "approver_role_names": role_names,
-            "max_managed_role_id": max_managed_role.id if max_managed_role else None,
-        }
-        save_guild_settings(self.cfg.guild_settings_path, self.guild_settings)
-
-        boundary_txt = max_managed_role.mention if max_managed_role else "None"
-
-        msg = (
-            "✅ RoleCop configured for this server.\n"
-            f"- Approvals channel: **#{approvals_channel.name}**\n"
-            f"- Approver roles: **{', '.join(role_names)}**\n"
-            f"- Boundary role: {boundary_txt}\n"
-            f"- Safe mode: **{safe_mode}**"
+        return await ctx.respond(
+            "You need Administrator or Manage Roles to run setup.", ephemeral=True
         )
-        return await ctx.respond(msg, ephemeral=True)
+
+    role_names = [approver_role_1.name]
+    if approver_role_2:
+        role_names.append(approver_role_2.name)
+
+    self.guild_settings[str(ctx.guild.id)] = {
+        "safe_mode": True,  # forced ON
+        "approvals_channel_name": approvals_channel.name,
+        "approvals_channel_id": approvals_channel.id,
+        "approver_role_names": role_names,
+        "max_managed_role_id": max_managed_role.id if max_managed_role else None,
+    }
+    save_guild_settings(self.cfg.guild_settings_path, self.guild_settings)
+
+    boundary_txt = max_managed_role.mention if max_managed_role else "None"
+
+    msg = (
+        "✅ RoleCop configured for this server.\n"
+        f"- Approvals channel: **#{approvals_channel.name}**\n"
+        f"- Approver roles: **{', '.join(role_names)}**\n"
+        f"- Boundary role: {boundary_txt}\n"
+        f"- Safe mode: **ON**"
+    )
+    return await ctx.respond(msg, ephemeral=True)
 
     # ---------------- Utility commands ----------------
     @commands.slash_command(
