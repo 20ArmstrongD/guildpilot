@@ -13,7 +13,9 @@ from discord.ext import commands
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 DEFAULT_DEV_REGISTRY = PROJECT_ROOT / "modules" / "core" / "guilds" / "dev_guilds.json"
-DEFAULT_PUBLIC_REGISTRY = PROJECT_ROOT / "modules" / "core" / "guilds" / "guilds_public.json"
+DEFAULT_PUBLIC_REGISTRY = (
+    PROJECT_ROOT / "modules" / "core" / "guilds" / "guilds_public.json"
+)
 
 
 @dataclass
@@ -137,8 +139,9 @@ class GuildTracker(commands.Cog):
     async def on_ready(self) -> None:
         self._upsert_guilds(list(self.bot.guilds))
         flavor = getattr(self.bot, "flavor", "?")
-        print(f"[guildtracker:{flavor}] snapshot saved ({len(self.bot.guilds)} guilds) -> {self.guild_log_path}")
-
+        print(
+            f"[guildtracker:{flavor}] snapshot saved ({len(self.bot.guilds)} guilds) -> {self.guild_log_path}"
+        )
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:

@@ -51,7 +51,6 @@ def load_guild_ids_from_json(path: Path) -> list[int]:
     return extract_guild_ids(raw)
 
 
-
 async def sync_commands_to_guilds_from_file(
     bot: discord.Bot,
     guilds_json_path: Path,
@@ -113,7 +112,9 @@ async def sync_commands_to_guilds_from_file(
     await asyncio.gather(*(_sync_one(gid) for gid in target_ids))
 
     ok = sum(1 for v in results.values() if v == "ok")
-    err = sum(1 for v in results.values() if isinstance(v, str) and v.startswith("error:"))
+    err = sum(
+        1 for v in results.values() if isinstance(v, str) and v.startswith("error:")
+    )
     skipped = sum(1 for v in results.values() if v == "not_in_guild")
 
     print(f"[SYNC:{tag}] done: {ok} ok | {err} errors | {skipped} skipped")

@@ -41,11 +41,17 @@ def build_bot(*, flavor: str, dev_guild_id: int | None = None) -> discord.Bot:
     # ✅ attach flavor + registry path BEFORE loading extensions
     bot.flavor = flavor
 
-    project_root = Path(__file__).resolve().parents[2]  # adjust if your main.py is located differently
+    project_root = (
+        Path(__file__).resolve().parents[2]
+    )  # adjust if your main.py is located differently
     if flavor == "dev":
-        bot.guild_registry_path = project_root / "modules" / "core" / "guilds" / "dev_guilds.json"
+        bot.guild_registry_path = (
+            project_root / "modules" / "core" / "guilds" / "dev_guilds.json"
+        )
     else:
-        bot.guild_registry_path = project_root / "modules" / "core" / "guilds" / "public_guilds.json"
+        bot.guild_registry_path = (
+            project_root / "modules" / "core" / "guilds" / "public_guilds.json"
+        )
 
     print(f"[BOOT:{flavor}] loading modules")
 
@@ -86,10 +92,14 @@ def build_bot(*, flavor: str, dev_guild_id: int | None = None) -> discord.Bot:
             )
 
             if results:
-                ok = sum(1 for v in results.values() if v == "ok" or str(v).startswith("ok"))
+                ok = sum(
+                    1 for v in results.values() if v == "ok" or str(v).startswith("ok")
+                )
                 err = sum(1 for v in results.values() if str(v).startswith("error:"))
                 skipped = sum(1 for v in results.values() if v == "not_in_guild")
-                print(f"[DEPLOY:{flavor}] deployed to {ok} guild(s) | {err} error(s) | {skipped} skipped")
+                print(
+                    f"[DEPLOY:{flavor}] deployed to {ok} guild(s) | {err} error(s) | {skipped} skipped"
+                )
             else:
                 print(f"[DEPLOY:{flavor}] no registry targets (0 guilds)")
 
@@ -104,7 +114,9 @@ def build_bot(*, flavor: str, dev_guild_id: int | None = None) -> discord.Bot:
             key = getattr(c, "qualified_name", c.name)
             unique[key] = c
 
-        print(f"[CMDS:{flavor}] loaded {len(unique)} commands locally (raw: {len(cmds)})")
+        print(
+            f"[CMDS:{flavor}] loaded {len(unique)} commands locally (raw: {len(cmds)})"
+        )
         for name in sorted(unique.keys()):
             print(f"    • /{name}")
 

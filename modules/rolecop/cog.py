@@ -251,7 +251,6 @@ class RoleCopCog(commands.Cog):
 
     # ---------------- Setup command (public servers) ----------------
 
-
     @commands.slash_command(
         name="rolecop_setup",
         description="Configure RoleCop for this server (admin only).",
@@ -577,9 +576,6 @@ class RoleCopCog(commands.Cog):
                 f"✅ {user.mention} already has {role.mention}.", ephemeral=True
             )
 
-        
-
-
         req = ApprovalRequest(
             requester_id=ctx.author.id,
             target_id=user.id,
@@ -633,8 +629,6 @@ class RoleCopCog(commands.Cog):
                 f"⚠️ {user.mention} does not have {role.mention}.", ephemeral=True
             )
 
-        
-    
         req = ApprovalRequest(
             requester_id=ctx.author.id,
             target_id=user.id,
@@ -674,8 +668,6 @@ class RoleCopCog(commands.Cog):
                 "RoleCop isn’t configured here. An admin must run `/rolecop_setup`.",
                 ephemeral=True,
             )
-
-        
 
         req = ApprovalRequest(
             requester_id=ctx.author.id,
