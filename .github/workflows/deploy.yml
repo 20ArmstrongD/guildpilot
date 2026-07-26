@@ -41,14 +41,14 @@ jobs:
           sleep 5
           if ! systemctl is-active --quiet guildpilot-dev; then
             echo "::error::guildpilot-dev failed to start"
-            sudo journalctl -u guildpilot-dev -n 50 --no-pager
+            journalctl -u guildpilot-dev -n 50 --no-pager
             exit 1
           fi
           echo "guildpilot-dev is active"
 
       - name: Recent logs
         if: always()
-        run: sudo journalctl -u guildpilot-dev -n 20 --no-pager
+        run: journalctl -u guildpilot-dev -n 20 --no-pager
 
   deploy-public:
     if: github.ref == 'refs/heads/main'
@@ -77,11 +77,11 @@ jobs:
           sleep 5
           if ! systemctl is-active --quiet guildpilot-public; then
             echo "::error::guildpilot-public failed to start"
-            sudo journalctl -u guildpilot-public -n 50 --no-pager
+            journalctl -u guildpilot-public -n 50 --no-pager
             exit 1
           fi
           echo "guildpilot-public is active"
 
       - name: Recent logs
         if: always()
-        run: sudo journalctl -u guildpilot-public -n 20 --no-pager
+        run: journalctl -u guildpilot-public -n 20 --no-pager
