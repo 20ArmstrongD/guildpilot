@@ -73,8 +73,7 @@ def test_interaction_check_denies_non_approver_and_notifies() -> None:
         assert await view.interaction_check(interaction) is False
         interaction.response.send_message.assert_called_once()
         assert (
-            interaction.response.send_message.call_args.kwargs.get("ephemeral")
-            is True
+            interaction.response.send_message.call_args.kwargs.get("ephemeral") is True
         )
 
     asyncio.run(scenario())

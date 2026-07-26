@@ -188,7 +188,9 @@ class GuildTracker(commands.Cog):
                 ephemeral=True,
             )
         except Exception as e:
-            print(f"[guildtracker:{flavor}] manual sync failed: {type(e).__name__}: {e}")
+            print(
+                f"[guildtracker:{flavor}] manual sync failed: {type(e).__name__}: {e}"
+            )
             await ctx.respond(
                 f"❌ Sync failed: {type(e).__name__}: {e}", ephemeral=True
             )

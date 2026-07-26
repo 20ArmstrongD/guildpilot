@@ -70,7 +70,9 @@ def test_load_runtime_config_personal_overlay_wins(tmp_path, monkeypatch) -> Non
     )
     personal_path = tmp_path / "personal_config.json"
     personal_path.write_text(
-        json.dumps({"personal_guild_id": 42, "defaults": {"approver_role_names": ["Owner"]}})
+        json.dumps(
+            {"personal_guild_id": 42, "defaults": {"approver_role_names": ["Owner"]}}
+        )
     )
 
     monkeypatch.setattr(config_loader, "PUBLIC_CONFIG_PATH", default_path)
