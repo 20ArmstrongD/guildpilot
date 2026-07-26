@@ -1,11 +1,12 @@
 import asyncio
 import os
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 import discord
 from discord.ext import commands
 from openai import OpenAI
+
+from .storage import load_state, save_state
 
 
 class PilotAI(commands.Cog):
@@ -29,11 +30,17 @@ class PilotAI(commands.Cog):
         self.cleanup_period = 300  # seconds (5 min)
 
         # convos[root_id] = {"history": [...], "last_active": datetime, "channel_id": int}
-        self.convos: dict[int, dict[str, Any]] = {}
         # map any bot message id in a convo back to its root id
-        self.msg_to_root: dict[int, int] = {}
+        # both are restored from disk so a restart doesn't drop active threads
+        self.convos, self.msg_to_root = load_state()
 
         self._cleanup_task: asyncio.Task | None = None
+
+    def _save_state(self) -> None:
+        try:
+            save_state(self.convos, self.msg_to_root)
+        except Exception as e:
+            print(f"[pilotai.storage] failed to save conversation state: {e!r}")
 
     def utcnow(self) -> datetime:
         return datetime.now(UTC)
@@ -89,6 +96,9 @@ class PilotAI(commands.Cog):
                         k for k, v in list(self.msg_to_root.items()) if v == root_id
                     ]:
                         del self.msg_to_root[mid]
+
+                if to_delete:
+                    self._save_state()
             except Exception as e:
                 print(f"[pilotai.cleanup] error: {e!r}")
 
@@ -106,6 +116,7 @@ class PilotAI(commands.Cog):
         name="ask-the-pilot",
         description="Talk to the pilot, he can probably help",
     )
+    @commands.cooldown(1, 20, commands.BucketType.user)
     async def ask_the_pilot(self, ctx: discord.ApplicationContext, message: str):
         # Start "thinking..."
         try:
@@ -149,6 +160,7 @@ class PilotAI(commands.Cog):
                 "channel_id": ctx.channel.id,
             }
             self.msg_to_root[root_id] = root_id
+            self._save_state()
 
             print(
                 f"[pilotai] user: {user_name}\n"
@@ -165,6 +177,28 @@ class PilotAI(commands.Cog):
                 )
             except Exception:
                 pass
+
+    @ask_the_pilot.error
+    async def ask_the_pilot_error(
+        self, ctx: discord.ApplicationContext, error: Exception
+    ) -> None:
+        if isinstance(error, commands.CommandOnCooldown):
+            try:
+                await ctx.respond(
+                    f"⏳ Slow down — try again in {error.retry_after:.0f}s.",
+                    ephemeral=True,
+                )
+            except Exception:
+                pass
+            return
+
+        print(f"[pilotai] Unhandled error in ask-the-pilot: {error!r}")
+        try:
+            await ctx.respond(
+                "There was an error processing your request.", ephemeral=True
+            )
+        except Exception:
+            pass
 
     # ================== Reply-to-continue handler with TTL ==================
     @commands.Cog.listener()
@@ -223,6 +257,7 @@ class PilotAI(commands.Cog):
 
                 self.msg_to_root[sent.id] = root_id
                 self.msg_to_root[ref.id] = root_id
+                self._save_state()
 
                 return  # do not fall through
 

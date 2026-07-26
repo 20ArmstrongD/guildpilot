@@ -155,6 +155,46 @@ class GuildTracker(commands.Cog):
         flavor = getattr(self.bot, "flavor", "?")
         print(f"[guildtracker:{flavor}] removed: {guild.name} ({guild.id})")
 
+    # ---------------- Manual resync ----------------
+    @commands.slash_command(
+        name="sync",
+        description="Force re-sync of slash commands for this server (admin only).",
+    )
+    async def sync_commands_here(self, ctx: discord.ApplicationContext) -> None:
+        if not ctx.guild or not isinstance(ctx.author, discord.Member):
+            return await ctx.respond("Run this in a server.", ephemeral=True)
+
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.respond(
+                "You need Administrator to force a command sync.", ephemeral=True
+            )
+
+        await ctx.defer(ephemeral=True)
+
+        flavor = getattr(self.bot, "flavor", "?")
+        try:
+            synced = await self.bot.sync_commands(guild_ids=[ctx.guild.id])
+            count = (
+                len(synced)
+                if synced is not None
+                else len(list(self.bot.walk_application_commands()))
+            )
+            print(
+                f"[guildtracker:{flavor}] manual sync by {ctx.author} "
+                f"in {ctx.guild.name} ({ctx.guild.id}) — {count} command(s)"
+            )
+            await ctx.respond(
+                f"✅ Synced {count} slash command(s) for **{ctx.guild.name}**.",
+                ephemeral=True,
+            )
+        except Exception as e:
+            print(
+                f"[guildtracker:{flavor}] manual sync failed: {type(e).__name__}: {e}"
+            )
+            await ctx.respond(
+                f"❌ Sync failed: {type(e).__name__}: {e}", ephemeral=True
+            )
+
 
 def setup(bot: commands.Bot) -> None:
     bot.add_cog(GuildTracker(bot))

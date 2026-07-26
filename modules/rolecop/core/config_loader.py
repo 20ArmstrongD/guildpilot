@@ -12,8 +12,8 @@ ROLECOP_DIR = PROJECT_ROOT / "modules" / "rolecop"
 CONFIG_DIR = ROLECOP_DIR / "config"
 STORAGE_DIR = ROLECOP_DIR / "storage"
 
-PUBLIC_CONFIG_PATH = CONFIG_DIR / "default.json"  # <- matches your screenshot
-PERSONAL_CONFIG_PATH = CONFIG_DIR / "personal_config.json"  # <- matches your screenshot
+PUBLIC_CONFIG_PATH = CONFIG_DIR / "default.json"
+PERSONAL_CONFIG_PATH = CONFIG_DIR / "personal_config.json"
 GUILD_SETTINGS_PATH = STORAGE_DIR / "guild_settings.json"
 
 
