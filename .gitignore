@@ -27,5 +27,8 @@ modules/rolecop/storage/guild_settings.json
 # RoleCop personal config
 modules/rolecop/config/personal_config.json
 
+# PilotAI conversation memory (user message content, not source)
+modules/pilotai/storage/convos.json
+
 modules/streamsentinel/
 
