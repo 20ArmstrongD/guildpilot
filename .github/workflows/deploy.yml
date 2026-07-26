@@ -1,3 +1,4 @@
+# Self-hosted runner (label: guildpilot) live on the homelab box as of 2026-07-26.
 name: Deploy
 
 run-name: Deploy • ${{ github.ref_name }}
