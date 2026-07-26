@@ -28,8 +28,10 @@ MODULES_PUBLIC = [
     ("rolecop", "modules.rolecop"),
 ]
 
-MODULES_DEV_ONLY = [
-    ("streamsentinel", "modules.streamsentinel.commands"),
+MODULES_DEV_ONLY: list[tuple[str, str]] = [
+    # ("streamsentinel", "modules.streamsentinel.commands"),
+    # Disabled: source is missing from disk (only __pycache__ remains) on the
+    # deploy host. Re-enable once the module is recovered/rewritten.
 ]
 
 
