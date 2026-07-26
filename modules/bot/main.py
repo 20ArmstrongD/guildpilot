@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import logging
 from pathlib import Path
@@ -125,7 +126,26 @@ def build_bot(*, flavor: str, dev_guild_id: int | None = None) -> discord.Bot:
     return bot
 
 
+async def run_public() -> None:
+    """Run only the public bot. Intended for its own process/service."""
+    configure_logging()
+    config = get_env_vars()
+    bot = build_bot(flavor="public")
+    await bot.start(config.discord_token)
+
+
+async def run_dev() -> None:
+    """Run only the dev bot. Intended for its own process/service."""
+    configure_logging()
+    dev_config = get_dev_env_vars()
+    bot = build_bot(flavor="dev")
+    await bot.start(dev_config.discord_token)
+
+
 async def run_two_bots() -> None:
+    """Run both bots in one process. Convenient for local development only —
+    production deploys should run public/dev as separate processes (see
+    run_public/run_dev) so restarting one never disrupts the other."""
     configure_logging()
 
     config = get_env_vars()
@@ -134,7 +154,6 @@ async def run_two_bots() -> None:
     public_bot = build_bot(flavor="public")
     dev_bot = build_bot(flavor="dev")
 
-    # Start both bots concurrently
     await asyncio.gather(
         public_bot.start(config.discord_token),
         dev_bot.start(dev_config.discord_token),
@@ -142,8 +161,24 @@ async def run_two_bots() -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Run GuildPilot bot(s).")
+    parser.add_argument(
+        "--flavor",
+        choices=["public", "dev", "both"],
+        default="both",
+        help="Which bot(s) to run. 'both' (default) is for local development; "
+        "production should run 'public' and 'dev' as separate processes.",
+    )
+    args = parser.parse_args()
+
+    runners = {
+        "public": run_public,
+        "dev": run_dev,
+        "both": run_two_bots,
+    }
+
     try:
-        asyncio.run(run_two_bots())
+        asyncio.run(runners[args.flavor]())
     except KeyboardInterrupt:
         print("[SHUTDOWN] received Ctrl+C")
 

@@ -1,0 +1,87 @@
+name: Deploy
+
+run-name: Deploy • ${{ github.ref_name }}
+
+on:
+  push:
+    branches: [ dev, main ]
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-dev:
+    if: github.ref == 'refs/heads/dev'
+    name: Deploy • dev
+    runs-on: [self-hosted, guildpilot]
+    environment: development
+
+    steps:
+      - name: Pull latest code
+        working-directory: /opt/guildpilot-dev
+        run: |
+          git fetch origin dev
+          git reset --hard origin/dev
+
+      - name: Install dependencies
+        working-directory: /opt/guildpilot-dev
+        run: |
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt
+
+      - name: Restart guildpilot-dev
+        run: sudo systemctl restart guildpilot-dev
+
+      - name: Verify service is active
+        run: |
+          sleep 5
+          if ! systemctl is-active --quiet guildpilot-dev; then
+            echo "::error::guildpilot-dev failed to start"
+            journalctl -u guildpilot-dev -n 50 --no-pager
+            exit 1
+          fi
+          echo "guildpilot-dev is active"
+
+      - name: Recent logs
+        if: always()
+        run: journalctl -u guildpilot-dev -n 20 --no-pager
+
+  deploy-public:
+    if: github.ref == 'refs/heads/main'
+    name: Deploy • public
+    runs-on: [self-hosted, guildpilot]
+    environment: production
+
+    steps:
+      - name: Pull latest code
+        working-directory: /opt/guildpilot-public
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Install dependencies
+        working-directory: /opt/guildpilot-public
+        run: |
+          ./venv/bin/pip install --upgrade pip
+          ./venv/bin/pip install -r requirements.txt
+
+      - name: Restart guildpilot-public
+        run: sudo systemctl restart guildpilot-public
+
+      - name: Verify service is active
+        run: |
+          sleep 5
+          if ! systemctl is-active --quiet guildpilot-public; then
+            echo "::error::guildpilot-public failed to start"
+            journalctl -u guildpilot-public -n 50 --no-pager
+            exit 1
+          fi
+          echo "guildpilot-public is active"
+
+      - name: Recent logs
+        if: always()
+        run: journalctl -u guildpilot-public -n 20 --no-pager
