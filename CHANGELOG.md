@@ -98,6 +98,36 @@ This release establishes GuildPilot as a **production-grade platform**, not a ho
 
 ---
 
+## [1.1.0] — 2026-07-27
+### 🚀 Deployment & Infrastructure
+- Added homelab deploy pipeline (`.github/workflows/deploy.yml`): self-hosted runner deploys on push to `dev`/`main`, restarts the matching systemd service, and runs a post-restart health check
+- Public deploys gated behind a `production` GitHub Environment for manual approval
+- Split bot entrypoint (`modules/bot/main.py`) with a `--flavor {public,dev,both}` flag so Public and Dev can run as independent processes/services
+- Added `deploy/guildpilot-dev.service` and `deploy/guildpilot-public.service` systemd unit templates
+- Added tag-based GitHub Releases workflow (`.github/workflows/release.yml`)
+- Improved CodeQL branch/PR labeling and CI concurrency grouping
+
+### 🛡️ Fixed — RoleCop
+- Fixed RoleCop's public-server fallback config silently resolving empty: `config/public.example.json` was orphaned and never matched by `config_loader.py`'s `PUBLIC_CONFIG_PATH`; renamed to `default.json` so it resolves correctly
+- Added unit tests for RoleCop's approval gating and config merge/fallback logic, including a regression test for the `default.json` bug
+
+### 🤖 Added — PilotAI
+- Conversation memory now persists to `modules/pilotai/storage/convos.json`, so active threads survive a bot restart
+- Added a per-user cooldown and friendly error handler on `/ask-the-pilot` to prevent unthrottled OpenAI usage
+
+### 🧭 Added — Admin Tools
+- Added an admin-only `/sync` command to force a slash-command resync for the current guild without restarting the bot
+- Reworked command sync output structure for readability and reconfigured how the bot syncs commands across servers
+
+### ⚠️ Known Issues
+- StreamSentinel is disabled: its source is missing from the deploy host (only stale `__pycache__` bytecode remains). Re-enable once the module is recovered or rewritten.
+
+### 🧹 Changed
+- Dependency updates: `pytest`, `python-dotenv`, and other package version bumps
+- Ruff lint/format cleanup across the codebase
+
+---
+
 ## [Unreleased]
 ### Planned
 - Web control panel
